@@ -8,7 +8,7 @@
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)com.example.bijecbet</string>
+		<string>$(AppIdentifierPrefix)com.bijec.bijectbet</string>
 	</array>
 </dict>
 </plist>
