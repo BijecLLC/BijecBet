@@ -476,3 +476,12 @@ This section should be dated and also numbered for prioty (number removed once c
     Purpose: If we are filtering based on sports books and classes
     - We want api calls to only call sports that are saved as favorites, so only lines for NBA if that is the only favorite
     - WE want api call to only call for the books that the filter has as filtered books
+
+- [x] __5.7: UI toggle__
+   Purpose: add a toggle that toggles ("Games already started") as off or on and  it filters if the game has already started, this is best for now as we are only polling data very 5 min and  when the game is currently live you can hit like 40 - 70% roi and  then A get limited or B jsut have the line move so fast its gone
+ - Add the State
+ - Ask for the toggle variable first.
+ - Add a React useState hook called hideStarted (implemented as hideStartedGamesProvider in Riverpod). Also, add a useMemo block to filter the games array so it only includes games where the commence_time is in the future (implemented in arbOpportunitiesProvider).
+ - Add the UI Toggle
+ - Ask for the visual checkbox.
+ - Add a UI toggle (Switch) above the list that controls the hideStarted state.
