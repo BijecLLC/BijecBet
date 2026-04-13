@@ -485,3 +485,9 @@ This section should be dated and also numbered for prioty (number removed once c
  - Add the UI Toggle
  - Ask for the visual checkbox.
  - Add a UI toggle (Switch) above the list that controls the hideStarted state.
+
+- [x] __5.8: Arb detection logic__
+
+ - Update the arbitrage detection logic to support 3-way (1X2) markets. It should check if there are 3 outcomes and apply the formula: (1/O1) + (1/OX) + (1/O2) < 1.
+
+ - Modify the BetCard UI component to handle a third betting option. If the market is a 3-way market, display the Home, Draw, and Away odds and calculate the required stakes for all three to guarantee the same profit.

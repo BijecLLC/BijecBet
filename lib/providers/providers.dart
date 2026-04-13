@@ -596,8 +596,7 @@ List<ArbOpportunity> _filterOpportunities({
   return bySport
       .where(
         (opportunity) =>
-            activeBookmakerKeys.contains(opportunity.bookmakerAKey) ||
-            activeBookmakerKeys.contains(opportunity.bookmakerBKey),
+            opportunity.outcomes.any((o) => activeBookmakerKeys.contains(o.bookmakerKey)),
       )
       .toList(growable: false);
 }
@@ -682,6 +681,7 @@ List<ArbOpportunity> _extractArbOpportunities(
           //only give the best outcome, we will use it later
           if (existing == null || decimalPrice > existing.decimalOdds) {
             marketBest[outcomeName] = _OutcomeQuote(
+              name: outcomeName,
               decimalOdds: decimalPrice,
               bookmakerKey: bookmakerKey,
               bookmakerTitle: bookmakerTitle,
@@ -697,24 +697,24 @@ List<ArbOpportunity> _extractArbOpportunities(
       final marketKey = entry.key;
       //get each outcome
       final outcomeQuotes = entry.value.values.toList(growable: false);
-      if (outcomeQuotes.length != 2) {
+      if (outcomeQuotes.length < 2 || outcomeQuotes.length > 3) {
         continue;
       }
-      // get the odds and see if there is an opportunity
-      final firstQuote = outcomeQuotes[0];
-      final secondQuote = outcomeQuotes[1];
-      final decimalOdds = [firstQuote.decimalOdds, secondQuote.decimalOdds];
+      
+      final decimalOdds = outcomeQuotes.map((q) => q.decimalOdds).toList();
       final arbSum = ArbEngine.arbitragePercentage(decimalOdds);
       if (!ArbEngine.isArbitrageOpportunity(decimalOdds)) {
         continue;
       }
       //profit margin
       final profitMarginPercent = (one - arbSum) * hundred;
-      //update time
-      final freshestUpdate =
-          firstQuote.lastUpdatedAt.isAfter(secondQuote.lastUpdatedAt)
-          ? firstQuote.lastUpdatedAt
-          : secondQuote.lastUpdatedAt;
+      
+      DateTime freshestUpdate = DateTime.fromMillisecondsSinceEpoch(0);
+      for (final q in outcomeQuotes) {
+        if (q.lastUpdatedAt.isAfter(freshestUpdate)) {
+          freshestUpdate = q.lastUpdatedAt;
+        }
+      }
 
       // Add the opportunitites to the list
       opportunities.add(
@@ -723,12 +723,12 @@ List<ArbOpportunity> _extractArbOpportunities(
           sportKey: sportKey,
           eventName: eventName,
           marketLabel: _marketLabel(marketKey),
-          bookmakerAKey: firstQuote.bookmakerKey,
-          bookmakerBKey: secondQuote.bookmakerKey,
-          bookmakerA: firstQuote.bookmakerTitle,
-          bookmakerB: secondQuote.bookmakerTitle,
-          decimalOddsA: firstQuote.decimalOdds,
-          decimalOddsB: secondQuote.decimalOdds,
+          outcomes: outcomeQuotes.map((q) => ArbOutcome(
+            name: q.name,
+            price: q.decimalOdds,
+            bookmakerKey: q.bookmakerKey,
+            bookmakerTitle: q.bookmakerTitle,
+          )).toList(),
           arbitrageSum: arbSum,
           profitMarginPercent: profitMarginPercent,
           commenceTime: commenceTime,
@@ -762,11 +762,10 @@ String _arbOpportunityIdentityKey(ArbOpportunity opportunity) {
   final kickoffEpochMillis = opportunity.commenceTime
       .toUtc()
       .millisecondsSinceEpoch;
-  final normalizedBooks = [
-    opportunity.bookmakerAKey.trim().toLowerCase(),
-    opportunity.bookmakerBKey.trim().toLowerCase(),
-  ]..sort((left, right) => left.compareTo(right));
-  return '$normalizedSport|$normalizedMatchup|$kickoffEpochMillis|${normalizedBooks[0]}|${normalizedBooks[1]}';
+  final normalizedBooks = opportunity.outcomes
+      .map((o) => o.bookmakerKey.trim().toLowerCase())
+      .toList()..sort();
+  return '$normalizedSport|$normalizedMatchup|$kickoffEpochMillis|${normalizedBooks.join("|")}';
 }
 
 String _normalizedMatchup(String eventName) {
@@ -920,12 +919,14 @@ Decimal? _parseDecimal(dynamic value) {
 //Outcome class for formatting it
 class _OutcomeQuote {
   const _OutcomeQuote({
+    required this.name,
     required this.decimalOdds,
     required this.bookmakerKey,
     required this.bookmakerTitle,
     required this.lastUpdatedAt,
   });
 
+  final String name;
   final Decimal decimalOdds;
   final String bookmakerKey;
   final String bookmakerTitle;

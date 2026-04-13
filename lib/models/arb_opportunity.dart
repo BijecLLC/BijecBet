@@ -1,5 +1,19 @@
 import 'package:decimal/decimal.dart';
 
+class ArbOutcome {
+  const ArbOutcome({
+    required this.name,
+    required this.price,
+    required this.bookmakerKey,
+    required this.bookmakerTitle,
+  });
+
+  final String name;
+  final Decimal price;
+  final String bookmakerKey;
+  final String bookmakerTitle;
+}
+
 //Class to represent one Arb opporunity
 class ArbOpportunity {
   const ArbOpportunity({
@@ -7,12 +21,7 @@ class ArbOpportunity {
     required this.sportKey,
     required this.eventName,
     required this.marketLabel,
-    required this.bookmakerAKey,
-    required this.bookmakerBKey,
-    required this.bookmakerA,
-    required this.bookmakerB,
-    required this.decimalOddsA,
-    required this.decimalOddsB,
+    required this.outcomes,
     required this.arbitrageSum,
     required this.profitMarginPercent,
     required this.commenceTime,
@@ -23,17 +32,14 @@ class ArbOpportunity {
   final String sportKey;
   final String eventName;
   final String marketLabel;
-  final String bookmakerAKey;
-  final String bookmakerBKey;
-  final String bookmakerA;
-  final String bookmakerB;
-  final Decimal decimalOddsA;
-  final Decimal decimalOddsB;
+  final List<ArbOutcome> outcomes;
   final Decimal arbitrageSum;
   final Decimal profitMarginPercent;
   final DateTime commenceTime;
   final DateTime lastUpdatedAt;
 
-  String get favoriteId =>
-      '$eventId|$marketLabel|$bookmakerAKey|$bookmakerBKey';
+  String get favoriteId {
+    final outcomeBookmakers = outcomes.map((o) => o.bookmakerKey).toList()..sort();
+    return '$eventId|$marketLabel|${outcomeBookmakers.join("|")}';
+  }
 }
