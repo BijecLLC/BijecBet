@@ -359,13 +359,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           children: [
                             const Text('Hide started'),
                             const SizedBox(width: 4),
-                            Switch(
-                              value: hideStarted,
-                              onChanged: (_) {
-                                ref
-                                    .read(hideStartedGamesProvider.notifier)
-                                    .toggleHideStarted();
-                              },
+                            Transform.scale(
+                              scale: 0.8,
+                              child: Switch(
+                                value: hideStarted,
+                                onChanged: (_) {
+                                  ref
+                                      .read(hideStartedGamesProvider.notifier)
+                                      .toggleHideStarted();
+                                },
+                              ),
                             ),
                           ],
                         ),
