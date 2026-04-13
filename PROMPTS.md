@@ -537,6 +537,7 @@ down a little and not overlap
 -  Now do 5.5.3 and all sub tasks 
 - now do 5.5.4 
 
+- now do 5.7
 4/12
 -Lets do 5.3.1 
 4/13

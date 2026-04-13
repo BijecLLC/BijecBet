@@ -617,10 +617,34 @@ final allArbOpportunitiesProvider =
       return oddsAsync.whenData(_extractArbOpportunities);
     });
 
+final hideStartedGamesProvider =
+    AsyncNotifierProvider<HideStartedGamesNotifier, bool>(
+      HideStartedGamesNotifier.new,
+    );
+
+class HideStartedGamesNotifier extends AsyncNotifier<bool> {
+  static const String _hideStartedKey = 'hide_started_games_v1';
+
+  @override
+  Future<bool> build() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getBool(_hideStartedKey) ?? true;
+  }
+
+  Future<void> toggleHideStarted() async {
+    final current = state.asData?.value ?? true;
+    final next = !current;
+    state = AsyncData(next);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_hideStartedKey, next);
+  }
+}
+
 final arbOpportunitiesProvider =
     Provider.autoDispose<AsyncValue<List<ArbOpportunity>>>((ref) {
       final allOpportunitiesAsync = ref.watch(allArbOpportunitiesProvider);
       final sortOption = ref.watch(dashboardSortOptionProvider);
+      final hideStarted = ref.watch(hideStartedGamesProvider).value ?? true;
       final favoriteSportKeys =
           ref.watch(favoriteSportKeysProvider).asData?.value ?? <String>{};
       final favoriteBookmakerKeys =
@@ -632,11 +656,19 @@ final arbOpportunitiesProvider =
       final favoriteOpportunityIds =
           ref.watch(favoriteOpportunityIdsProvider).asData?.value ?? <String>{};
       return allOpportunitiesAsync.whenData((allOpportunities) {
-        final opportunities = _filterOpportunities(
+        var opportunities = _filterOpportunities(
           opportunities: allOpportunities,
           favoriteSportKeys: favoriteSportKeys,
           activeBookmakerKeys: activeBookmakerKeys,
         );
+
+        if (hideStarted) {
+          final now = DateTime.now();
+          opportunities = opportunities
+              .where((opportunity) => opportunity.commenceTime.isAfter(now))
+              .toList(growable: false);
+        }
+
         opportunities.sort((a, b) {
           switch (sortOption) {
             case DashboardSortOption.highestProfit:
