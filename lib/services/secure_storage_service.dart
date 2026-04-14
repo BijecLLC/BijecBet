@@ -60,4 +60,20 @@ class SecureStorageService {
   Future<void> clearLegacyOddsApiKey() {
     return _storage.delete(key: _legacyOddsApiKey);
   }
+
+  Future<bool> deleteApiKey({String? uid}) async {
+    // Execution (Requirement 5.9.1): Hardware Wipe
+    await _storage.delete(key: 'odds_api_key');
+    
+    // Also wipe actual keys used by the app for completeness
+    await clearOddsApiKey(uid: uid);
+    await clearLegacyOddsApiKey();
+
+    // Verification
+    final literalKey = await _storage.read(key: 'odds_api_key');
+    final legacyKey = await _storage.read(key: _legacyOddsApiKey);
+    final userKey = uid != null ? await _storage.read(key: _userSpecificOddsApiKey(uid)) : null;
+
+    return literalKey == null && legacyKey == null && (uid == null || userKey == null);
+  }
 }

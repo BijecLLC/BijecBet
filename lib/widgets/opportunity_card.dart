@@ -196,8 +196,38 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
               ),
             ],
           ),
+          Text(
+            'Books: ${opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
+          ),
           const SizedBox(height: 6),
-          
+          // Calculate stakes for display
+          Builder(
+            builder: (context) {
+              final investmentStr = ref.watch(opportunityInvestmentInputProvider(opportunity.favoriteId));
+              final totalInvestment = Decimal.tryParse(investmentStr) ?? Decimal.fromInt(100);
+              
+              final odds = opportunity.outcomes.map((o) => o.price).toList();
+              final stakes = ArbEngine.individualStakes(
+                decimalOdds: odds,
+                totalInvestment: totalInvestment,
+              );
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < opportunity.outcomes.length; i++)
+                    Text(
+                      'Bet \$${_formatDecimal(stakes[i], 2)} on ${opportunity.outcomes[i].name} (${opportunity.outcomes[i].bookmakerTitle}) @ ${opportunity.outcomes[i].price}',
+                      style: theme.textTheme.bodySmall?.copyWith(color: mutedTextColor),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 6),
           Text(
             topMarket == null
                 ? 'Highest reward market: none'
@@ -244,6 +274,10 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
 
     return InkWell(onTap: widget.onOpenDetails, child: card);
   }
+}
+
+String _formatDecimal(Decimal value, int fractionDigits) {
+  return value.toStringAsFixed(fractionDigits);
 }
 
 String _formatPercent(Decimal value) {

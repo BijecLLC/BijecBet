@@ -710,9 +710,10 @@ class _OpportunitySearchDelegate extends SearchDelegate<ArbOpportunity?> {
           final sportLabel =
               (sportsByKey[opportunity.sportKey] ?? opportunity.sportKey)
                   .toLowerCase();
+          final bookmakerHaystack = opportunity.outcomes.map((o) => o.bookmakerTitle).join(' ');
           final haystack =
               '${opportunity.eventName} ${opportunity.marketLabel} '
-                      '${opportunity.bookmakerA} ${opportunity.bookmakerB} '
+                      '$bookmakerHaystack '
                       '${opportunity.sportKey} $sportLabel'
                   .toLowerCase();
           return haystack.contains(normalizedQuery);
@@ -734,11 +735,12 @@ class _OpportunitySearchDelegate extends SearchDelegate<ArbOpportunity?> {
         final isFavorite = favoriteOpportunityIds.contains(
           opportunity.favoriteId,
         );
+        final bookmakerTitles = opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ');
         return ListTile(
           title: Text(opportunity.eventName),
           subtitle: Text(
             'Sport: $sportLabel • Market: ${opportunity.marketLabel} • '
-            'Books: ${opportunity.bookmakerA}/${opportunity.bookmakerB}',
+            'Books: $bookmakerTitles',
           ),
           trailing: Icon(
             isFavorite ? Icons.push_pin : Icons.push_pin_outlined,
