@@ -706,9 +706,10 @@ class _OpportunitySearchDelegate extends SearchDelegate<ArbOpportunity?> {
           final sportLabel =
               (sportsByKey[opportunity.sportKey] ?? opportunity.sportKey)
                   .toLowerCase();
+          final bookmakerHaystack = opportunity.outcomes.map((o) => o.bookmakerTitle).join(' ');
           final haystack =
               '${opportunity.eventName} ${opportunity.marketLabel} '
-                      '${opportunity.bookmakerA} ${opportunity.bookmakerB} '
+                      '$bookmakerHaystack '
                       '${opportunity.sportKey} $sportLabel'
                   .toLowerCase();
           return haystack.contains(normalizedQuery);

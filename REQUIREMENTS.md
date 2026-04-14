@@ -491,3 +491,48 @@ This section should be dated and also numbered for prioty (number removed once c
  - Update the arbitrage detection logic to support 3-way (1X2) markets. It should check if there are 3 outcomes and apply the formula: (1/O1) + (1/OX) + (1/O2) < 1.
 
  - Modify the BetCard UI component to handle a third betting option. If the market is a 3-way market, display the Home, Draw, and Away odds and calculate the required stakes for all three to guarantee the same profit.
+
+- [x] __5.8b: Mock Data__
+
+ - In mock_data.dart, generate 8 new mock ArbOpportunity objects using the List<ArbOutcome> format. Provide:Two 3-way Soccer Arbs (1X2) where $(1/O1 + 1/OX + 1/O2) < 1$ (ROI > 3%).Two 2-way Tennis Arbs where $(1/O1 + 1/O2) < 1$ (ROI > 2%).Four Non-Arbs (two 2-way, two 3-way) where the math results in a loss (ROI < 0%).
+ 
+ - Ensure commence_time varies: some should be in the past (to test our new 'Hide Started' filter) and some in the future. Use realistic bookmaker names like DraftKings, FanDuel, and Bet365."
+
+ - [x] __5.9: Secure API Key Deletion (The "Wipe" System)__
+ Goal: Implement a failsafe "Wipe" mechanism for the API key to ensure user security and allow for clean credential resets without app reinstallation.
+
+ [x] **5.9.1: Storage Logic (Hardware Wipe)**
+
+ -Service Method: Update SecureStorageService to include an async function deleteApiKey().
+
+ -Execution: This must call _storage.delete(key: 'odds_api_key') to remove the entry from the device's encrypted keychain/keystore.
+
+ -Verification: The function should return a boolean to confirm the key no longer exists in storage.
+
+ [x] **5.9.2: State Management (Riverpod Reset)**
+
+ -Provider Invalidation: In the oddsApiKeyProvider, add a method to trigger the hardware wipe.
+
+ -Reactivity: Once the key is deleted, the provider must notify all listeners (like the oddsApiServiceProvider) by setting the state to null.
+
+ -Immediate Effect: This should immediately stop any ongoing "Live Opportunity" polling to avoid 401 errors.
+
+ [x] **5.9.3: UI Implementation (Settings Button)**
+
+ -Placement: Add a TextButton or ListTile at the bottom of the API Keys settings tab (Step 5.4.1).
+
+ -Styling: Use QuantTheme.error (Red) for the text and use Icons.delete_forever to signal a destructive action.
+
+ -Label: "Clear Stored API Key"
+
+ [x] **5.9.4: UX Guardrails (Confirmation & Routing)**
+
+ -Confirmation Dialog: Pressing the button must trigger a showDialog.
+
+ -Content: "Wipe API Key? This will stop all live data syncing until a new key is provided."
+
+ -Actions: "Cancel" (close) and "Wipe" (execute).
+
+ -Post-Wipe Feedback: Show a SnackBar confirming the wipe.
+
+ -Navigation: Automatically pop the user back to the Dashboard or a "Setup Required" state to ensure the UI reflects the missing credentials.

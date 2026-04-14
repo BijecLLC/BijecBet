@@ -394,6 +394,58 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
     }
   }
 
+  Future<void> _showWipeConfirmationDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Wipe API Key?'),
+        content: const Text(
+          'This will stop all live data syncing until a new key is provided.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Wipe'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await _wipeApiKey();
+    }
+  }
+
+  Future<void> _wipeApiKey() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await ref.read(oddsApiKeyProvider.notifier).wipeKey();
+
+    if (success) {
+      _oddsApiKeyController.clear();
+      setState(() {
+        _remainingRequests = null;
+      });
+      messenger.showSnackBar(
+        const SnackBar(content: Text('API key wiped successfully.')),
+      );
+      // Requirement 5.9.4: Automatically pop the user back to the Dashboard
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    } else {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Failed to wipe API key.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -441,19 +493,29 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton.icon(
-                    onPressed: _isSaving ? null : _saveOddsApiKey,
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.save_outlined),
-                    label: Text(_isSaving ? 'Updating...' : 'Update Key'),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _isSaving ? null : _showWipeConfirmationDialog,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      icon: const Icon(Icons.delete_forever),
+                      label: const Text('Clear Stored API Key'),
+                    ),
+                    FilledButton.icon(
+                      onPressed: _isSaving ? null : _saveOddsApiKey,
+                      icon: _isSaving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_outlined),
+                      label: Text(_isSaving ? 'Updating...' : 'Update Key'),
+                    ),
+                  ],
                 ),
               ],
             ),

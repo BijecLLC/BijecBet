@@ -82,6 +82,25 @@ class OddsApiKeyNotifier extends AsyncNotifier<String?> {
     AppConfig.setRuntimeOddsApiKey(normalized);
     state = AsyncData(normalized);
   }
+
+  Future<bool> wipeKey() async {
+    final authState = ref.read(authStateChangesProvider);
+    final user = authState.asData?.value;
+    final secureStorage = ref.read(secureStorageServiceProvider);
+
+    // Execution (Requirement 5.9.2): Trigger hardware wipe
+    final success = await secureStorage.deleteApiKey(uid: user?.uid);
+
+    if (success) {
+      // Clear runtime config to ensure no fallback key is accidentally used
+      AppConfig.clearRuntimeOddsApiKey();
+      
+      // Reactivity: Notify listeners by setting state to null
+      state = const AsyncData(null);
+    }
+    
+    return success;
+  }
 }
 
 final authStateChangesProvider = StreamProvider<User?>((ref) {
@@ -800,9 +819,9 @@ bool _isPreferredOpportunityCandidate(
     return false;
   }
   final candidateTieBreak =
-      '${candidate.eventId}|${candidate.bookmakerAKey}|${candidate.bookmakerBKey}|${candidate.decimalOddsA}|${candidate.decimalOddsB}';
+      '${candidate.eventId}|${candidate.outcomes.map((o) => '${o.bookmakerKey}:${o.price}').join('|')}';
   final currentTieBreak =
-      '${current.eventId}|${current.bookmakerAKey}|${current.bookmakerBKey}|${current.decimalOddsA}|${current.decimalOddsB}';
+      '${current.eventId}|${current.outcomes.map((o) => '${o.bookmakerKey}:${o.price}').join('|')}';
   return candidateTieBreak.compareTo(currentTieBreak) < 0;
 }
 

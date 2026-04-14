@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/utils/arb_engine.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import 'cyber_animations.dart';
