@@ -120,7 +120,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
     final totalInvestment = Decimal.parse(rawInvestment.toString());
 
     final rawStakes = ArbEngine.individualStakes(
-      decimalOdds: [widget.opportunity.decimalOddsA, widget.opportunity.decimalOddsB],
+      decimalOdds: widget.opportunity.outcomes.map((x) => x.price).toList(),
       totalInvestment: totalInvestment,
     );
 
@@ -174,7 +174,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      'Books ${widget.opportunity.bookmakerA}/${widget.opportunity.bookmakerB}',
+                      'Books ${widget.opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
                       style: Theme.of(
                         context,
                       ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
@@ -197,7 +197,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
             ],
           ),
           Text(
-            'Books: ${opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
+            'Books: ${widget.opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
@@ -206,10 +206,10 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
           // Calculate stakes for display
           Builder(
             builder: (context) {
-              final investmentStr = ref.watch(opportunityInvestmentInputProvider(opportunity.favoriteId));
+              final investmentStr = ref.watch(opportunityInvestmentInputProvider(widget.opportunity.favoriteId));
               final totalInvestment = Decimal.tryParse(investmentStr) ?? Decimal.fromInt(100);
               
-              final odds = opportunity.outcomes.map((o) => o.price).toList();
+              final odds = widget.opportunity.outcomes.map((o) => o.price).toList();
               final stakes = ArbEngine.individualStakes(
                 decimalOdds: odds,
                 totalInvestment: totalInvestment,
@@ -218,9 +218,9 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (var i = 0; i < opportunity.outcomes.length; i++)
+                  for (var i = 0; i < widget.opportunity.outcomes.length; i++)
                     Text(
-                      'Bet \$${_formatDecimal(stakes[i], 2)} on ${opportunity.outcomes[i].name} (${opportunity.outcomes[i].bookmakerTitle}) @ ${opportunity.outcomes[i].price}',
+                      'Bet \$${_formatDecimal(stakes[i], 2)} on ${widget.opportunity.outcomes[i].name} (${widget.opportunity.outcomes[i].bookmakerTitle}) @ ${widget.opportunity.outcomes[i].price}',
                       style: theme.textTheme.bodySmall?.copyWith(color: mutedTextColor),
                     ),
                 ],
