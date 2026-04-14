@@ -564,7 +564,7 @@ This section should be dated and also numbered for prioty (number removed once c
 
 - Ensure the sum of all calculated stakes perfectly matches the totalInvestment input to avoid rounding errors.
 
-[ ] **5.10.3Fixing UI Error**
+[x] **5.10.3Fixing UI Error**
 
 - Locate the ArbDetailScreen (or the widget handling the Investment Input).
 
