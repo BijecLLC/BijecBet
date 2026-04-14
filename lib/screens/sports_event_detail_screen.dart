@@ -131,10 +131,9 @@ class _SportsEventDetailScreenState
                 input: RiskInput(
                   arbPercent: double.tryParse(currentRoi.toString()) ?? 0.0,
                   totalInvestment: double.tryParse(investmentInput) ?? 0.0,
-                  stakeDistribution: Float64List.fromList([
-                    result.stakeA.toDouble(),
-                    result.stakeB.toDouble(),
-                  ]),
+                  stakeDistribution: Float64List.fromList(
+                    result.stakes.map((s) => s.toDouble()).toList(),
+                  ),
                   betsPerDay: stealthSettings.betsPerDay,
                   booksCount: stealthSettings.booksCount,
                   sportsCount: stealthSettings.sportsCount,
@@ -223,16 +222,15 @@ class _SportsEventDetailScreenState
                     ),
                   ),
                 if (stakeGuidance.result != null) ...[
-                  Text(
-                    'Bet \$${_formatDecimal(stakeGuidance.result!.stakeA)} on '
-                    '${stakeGuidance.result!.bookmakerA} '
-                    'for ${stakeGuidance.result!.betDescriptorA}',
-                  ),
-                  Text(
-                    'Bet \$${_formatDecimal(stakeGuidance.result!.stakeB)} on '
-                    '${stakeGuidance.result!.bookmakerB} '
-                    'for ${stakeGuidance.result!.betDescriptorB}',
-                  ),
+                  ...List.generate(stakeGuidance.result!.stakes.length, (i) {
+                    final stake = stakeGuidance.result!.stakes[i];
+                    final outcome = stakeGuidance.result!.outcomes[i];
+                    return Text(
+                      'Bet \$${_formatDecimal(stake)} on '
+                      '${outcome.bookmakerTitle} '
+                      'for ${_formatBetDescriptor(marketKey: selectedMarket.marketKey, quote: outcome)}',
+                    );
+                  }),
                   if (stakeGuidance.result!.lineMismatchNote != null)
                     Text(
                       stakeGuidance.result!.lineMismatchNote!,
@@ -407,15 +405,14 @@ _OpportunityStakeGuidance _calculateMarketStakeGuidance({
   }
 
   final bestQuotes = bestByOutcome.values.toList(growable: false);
-  if (bestQuotes.length != 2) {
+  if (bestQuotes.isEmpty) {
     return const _OpportunityStakeGuidance(
-      errorMessage:
-          'Planner supports 2-outcome markets. Select a market with exactly two outcomes.',
+      errorMessage: 'No valid odds found for this market.',
     );
   }
 
   var stakes = ArbEngine.individualStakes(
-    decimalOdds: [bestQuotes[0].odds, bestQuotes[1].odds],
+    decimalOdds: bestQuotes.map((q) => q.odds).toList(),
     totalInvestment: parsedInvestment,
   );
 
@@ -425,10 +422,13 @@ _OpportunityStakeGuidance _calculateMarketStakeGuidance({
         .toList();
   }
 
-  final payoutA = stakes[0] * bestQuotes[0].odds;
-  final payoutB = stakes[1] * bestQuotes[1].odds;
-  final guaranteedPayout = payoutA < payoutB ? payoutA : payoutB;
-  final actualInvestment = stakes[0] + stakes[1];
+  final payouts = <Decimal>[];
+  for (var i = 0; i < stakes.length; i++) {
+    payouts.add(stakes[i] * bestQuotes[i].odds);
+  }
+
+  final guaranteedPayout = payouts.reduce((a, b) => a < b ? a : b);
+  final actualInvestment = stakes.fold(zero, (sum, s) => sum + s);
   final netProfit = guaranteedPayout - actualInvestment;
   final profitPercent = actualInvestment > zero
       ? _toDecimal(netProfit / actualInvestment) * hundred
@@ -437,22 +437,11 @@ _OpportunityStakeGuidance _calculateMarketStakeGuidance({
   return _OpportunityStakeGuidance(
     profitPercent: profitPercent,
     result: _OpportunityStakeResult(
-      stakeA: stakes[0],
-      stakeB: stakes[1],
-      betDescriptorA: _formatBetDescriptor(
+      stakes: stakes,
+      outcomes: bestQuotes,
+      lineMismatchNote: _lineMismatchNoteForMultiple(
         marketKey: selectedMarket.marketKey,
-        quote: bestQuotes[0],
-      ),
-      betDescriptorB: _formatBetDescriptor(
-        marketKey: selectedMarket.marketKey,
-        quote: bestQuotes[1],
-      ),
-      bookmakerA: bestQuotes[0].bookmakerTitle,
-      bookmakerB: bestQuotes[1].bookmakerTitle,
-      lineMismatchNote: _lineMismatchNote(
-        marketKey: selectedMarket.marketKey,
-        quoteA: bestQuotes[0],
-        quoteB: bestQuotes[1],
+        quotes: bestQuotes,
       ),
       guaranteedPayout: guaranteedPayout,
       netProfit: netProfit,
@@ -474,23 +463,15 @@ class _OpportunityStakeGuidance {
 
 class _OpportunityStakeResult {
   const _OpportunityStakeResult({
-    required this.stakeA,
-    required this.stakeB,
-    required this.betDescriptorA,
-    required this.betDescriptorB,
-    required this.bookmakerA,
-    required this.bookmakerB,
+    required this.stakes,
+    required this.outcomes,
     required this.lineMismatchNote,
     required this.guaranteedPayout,
     required this.netProfit,
   });
 
-  final Decimal stakeA;
-  final Decimal stakeB;
-  final String betDescriptorA;
-  final String betDescriptorB;
-  final String bookmakerA;
-  final String bookmakerB;
+  final List<Decimal> stakes;
+  final List<_OutcomeBookOdds> outcomes;
   final String? lineMismatchNote;
   final Decimal guaranteedPayout;
   final Decimal netProfit;
@@ -531,24 +512,21 @@ String _formatBetDescriptor({
   return quote.outcomeName;
 }
 
-String? _lineMismatchNote({
+String? _lineMismatchNoteForMultiple({
   required String marketKey,
-  required _OutcomeBookOdds quoteA,
-  required _OutcomeBookOdds quoteB,
+  required List<_OutcomeBookOdds> quotes,
 }) {
   if (marketKey != 'spreads' && marketKey != 'totals') {
     return null;
   }
-  final a = quoteA.point;
-  final b = quoteB.point;
-  if (a == null || b == null) {
+  final points = quotes.map((q) => q.point).whereType<Decimal>().toSet();
+  final absolutePoints = points.map((p) => p < Decimal.zero ? -p : p).toSet();
+  
+  if (absolutePoints.length <= 1) {
     return null;
   }
-  if (a == b || a == -b) {
-    return null;
-  }
-  return 'Note: selected best prices are from different lines '
-      '(${_signedLine(a)} vs ${_signedLine(b)}). Verify your stake plan.';
+  
+  return 'Note: selected best prices are from different lines. Verify your stake plan.';
 }
 
 String _signedLine(Decimal value) {
@@ -578,7 +556,7 @@ List<_MarketReturnSummary> _summarizePositiveMarketReturns(
       }
     }
     final bestOdds = bestByOutcome.values.toList(growable: false);
-    if (bestOdds.length != 2) {
+    if (bestOdds.length < 2) {
       continue;
     }
     final arbSum = ArbEngine.arbitragePercentage(bestOdds);

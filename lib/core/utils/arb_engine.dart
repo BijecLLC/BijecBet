@@ -74,14 +74,29 @@ class ArbEngine {
         'Must be greater than 0.',
       );
     }
+    if (decimalOdds.isEmpty) {
+      return const [];
+    }
 
     final arbPercentage = arbitragePercentage(decimalOdds);
-    return decimalOdds
+    final stakes = decimalOdds
         .map(
           (odds) =>
               _toDecimal(totalInvestment / arbPercentage) *
               impliedProbability(odds),
         )
-        .toList(growable: false);
+        .toList();
+
+    // Ensure the sum of all calculated stakes perfectly matches totalInvestment 
+    // to avoid rounding errors (Requirement 5.10.2).
+    var sumOfInitialStakes = _zero;
+    for (var i = 0; i < stakes.length - 1; i++) {
+      sumOfInitialStakes += stakes[i];
+    }
+    
+    // Adjust the last stake to match the exact total investment.
+    stakes[stakes.length - 1] = totalInvestment - sumOfInitialStakes;
+
+    return stakes;
   }
 }
