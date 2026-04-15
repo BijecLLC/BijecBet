@@ -43,350 +43,11 @@ const List<Map<String, dynamic>> mockSportsResponse = [
 
 const List<Map<String, dynamic>> mockOddsResponse = [
   {
-    'id': 'nba_lal_bos_001',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-03-06T00:30:00Z',
-    'home_team': 'Boston Celtics',
-    'away_team': 'Los Angeles Lakers',
-    'bookmakers': [
-      {
-        'key': 'draftkings',
-        'title': 'DraftKings',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Los Angeles Lakers', 'price': 155},
-              {'name': 'Boston Celtics', 'price': -172},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Los Angeles Lakers', 'price': -110, 'point': 4.5},
-              {'name': 'Boston Celtics', 'price': -110, 'point': -4.5},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -102, 'point': 228.5},
-              {'name': 'Under', 'price': -118, 'point': 228.5},
-            ],
-          },
-        ],
-      },
-      {
-        'key': 'fanduel',
-        'title': 'FanDuel',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Los Angeles Lakers', 'price': 162},
-              {'name': 'Boston Celtics', 'price': -178},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Los Angeles Lakers', 'price': -108, 'point': 5.0},
-              {'name': 'Boston Celtics', 'price': -112, 'point': -5.0},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -110, 'point': 228.5},
-              {'name': 'Under', 'price': -106, 'point': 228.5},
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    'id': 'nba_mia_den_002',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-03-06T02:00:00Z',
-    'home_team': 'Denver Nuggets',
-    'away_team': 'Miami Heat',
-    'bookmakers': [
-      {
-        'key': 'caesars',
-        'title': 'Caesars',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Miami Heat', 'price': 170},
-              {'name': 'Denver Nuggets', 'price': -190},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Miami Heat', 'price': -110, 'point': 5.5},
-              {'name': 'Denver Nuggets', 'price': -110, 'point': -5.5},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -105, 'point': 221.5},
-              {'name': 'Under', 'price': -115, 'point': 221.5},
-            ],
-          },
-        ],
-      },
-      {
-        'key': 'betmgm',
-        'title': 'BetMGM',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Miami Heat', 'price': 165},
-              {'name': 'Denver Nuggets', 'price': -185},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Miami Heat', 'price': -108, 'point': 5.0},
-              {'name': 'Denver Nuggets', 'price': -112, 'point': -5.0},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -112, 'point': 221.5},
-              {'name': 'Under', 'price': -104, 'point': 221.5},
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    'id': 'nba_gsw_phx_003',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-03-06T03:30:00Z',
-    'home_team': 'Phoenix Suns',
-    'away_team': 'Golden State Warriors',
-    'bookmakers': [
-      {
-        'key': 'pointsbet',
-        'title': 'PointsBet',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Golden State Warriors', 'price': 120},
-              {'name': 'Phoenix Suns', 'price': -132},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Golden State Warriors', 'price': -110, 'point': 2.5},
-              {'name': 'Phoenix Suns', 'price': -110, 'point': -2.5},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -108, 'point': 225.5},
-              {'name': 'Under', 'price': -112, 'point': 225.5},
-            ],
-          },
-        ],
-      },
-      {
-        'key': 'unibet',
-        'title': 'Unibet',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Golden State Warriors', 'price': 125},
-              {'name': 'Phoenix Suns', 'price': -138},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Golden State Warriors', 'price': -108, 'point': 3.0},
-              {'name': 'Phoenix Suns', 'price': -112, 'point': -3.0},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -101, 'point': 225.5},
-              {'name': 'Under', 'price': -120, 'point': 225.5},
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    'id': 'nba_dal_nyk_004',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-03-06T05:00:00Z',
-    'home_team': 'New York Knicks',
-    'away_team': 'Dallas Mavericks',
-    'bookmakers': [
-      {
-        'key': 'espnbet',
-        'title': 'ESPN BET',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Dallas Mavericks', 'price': 118},
-              {'name': 'New York Knicks', 'price': -126},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Dallas Mavericks', 'price': -110, 'point': 2.0},
-              {'name': 'New York Knicks', 'price': -110, 'point': -2.0},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -114, 'point': 218.5},
-              {'name': 'Under', 'price': -104, 'point': 218.5},
-            ],
-          },
-        ],
-      },
-      {
-        'key': 'wynnbet',
-        'title': 'WynnBET',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Dallas Mavericks', 'price': 105},
-              {'name': 'New York Knicks', 'price': -102},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Dallas Mavericks', 'price': -108, 'point': 2.5},
-              {'name': 'New York Knicks', 'price': -112, 'point': -2.5},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -102, 'point': 218.5},
-              {'name': 'Under', 'price': -118, 'point': 218.5},
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    'id': 'nfl_kc_buf_005',
-    'sport_key': 'americanfootball_nfl',
-    'commence_time': '2026-03-06T20:25:00Z',
-    'home_team': 'Buffalo Bills',
-    'away_team': 'Kansas City Chiefs',
-    'bookmakers': [
-      {
-        'key': 'betrivers',
-        'title': 'BetRivers',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs', 'price': 112},
-              {'name': 'Buffalo Bills', 'price': -118},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs', 'price': -110, 'point': 1.5},
-              {'name': 'Buffalo Bills', 'price': -110, 'point': -1.5},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -108, 'point': 48.5},
-              {'name': 'Under', 'price': -112, 'point': 48.5},
-            ],
-          },
-          {
-            'key': 'outrights',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs AFC Winner', 'price': 240},
-              {'name': 'Buffalo Bills AFC Winner', 'price': 255},
-            ],
-          },
-        ],
-      },
-      {
-        'key': 'hardrockbet',
-        'title': 'Hard Rock Bet',
-        'last_update': '2026-03-05T03:00:00Z',
-        'markets': [
-          {
-            'key': 'h2h',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs', 'price': 102},
-              {'name': 'Buffalo Bills', 'price': 104},
-            ],
-          },
-          {
-            'key': 'spreads',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs', 'price': -108, 'point': 2.0},
-              {'name': 'Buffalo Bills', 'price': -112, 'point': -2.0},
-            ],
-          },
-          {
-            'key': 'totals',
-            'outcomes': [
-              {'name': 'Over', 'price': -104, 'point': 48.5},
-              {'name': 'Under', 'price': -116, 'point': 48.5},
-            ],
-          },
-          {
-            'key': 'outrights',
-            'outcomes': [
-              {'name': 'Kansas City Chiefs AFC Winner', 'price': 265},
-              {'name': 'Buffalo Bills AFC Winner', 'price': 235},
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    'id': 'soccer_arb_3way_future',
+    'id': 'soccer_epl_liv_mci_001',
     'sport_key': 'soccer_epl',
-    'commence_time': '2026-04-20T15:00:00Z',
-    'home_team': 'Arsenal',
-    'away_team': 'Chelsea',
+    'commence_time': '2026-04-20T19:00:00Z',
+    'home_team': 'Manchester City',
+    'away_team': 'Liverpool',
     'bookmakers': [
       {
         'key': 'draftkings',
@@ -396,9 +57,9 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Arsenal', 'price': 210},
-              {'name': 'Chelsea', 'price': 250},
-              {'name': 'Draw', 'price': 280},
+              {'name': 'Liverpool', 'price': 215},
+              {'name': 'Manchester City', 'price': 330},
+              {'name': 'Draw', 'price': 360},
             ],
           },
         ],
@@ -411,22 +72,13 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Arsenal', 'price': 215},
-              {'name': 'Chelsea', 'price': 245},
-              {'name': 'Draw', 'price': 275},
+              {'name': 'Liverpool', 'price': 210},
+              {'name': 'Manchester City', 'price': 345},
+              {'name': 'Draw', 'price': 375},
             ],
           },
         ],
       },
-    ],
-  },
-  {
-    'id': 'soccer_arb_3way_past',
-    'sport_key': 'soccer_epl',
-    'commence_time': '2026-04-10T15:00:00Z',
-    'home_team': 'Liverpool',
-    'away_team': 'Man City',
-    'bookmakers': [
       {
         'key': 'bet365',
         'title': 'Bet365',
@@ -435,9 +87,9 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Liverpool', 'price': 310},
-              {'name': 'Man City', 'price': 310},
-              {'name': 'Draw', 'price': 310},
+              {'name': 'Liverpool', 'price': 205},
+              {'name': 'Manchester City', 'price': 340},
+              {'name': 'Draw', 'price': 410},
             ],
           },
         ],
@@ -445,11 +97,65 @@ const List<Map<String, dynamic>> mockOddsResponse = [
     ],
   },
   {
-    'id': 'tennis_arb_2way_future',
-    'sport_key': 'tennis_atp',
-    'commence_time': '2026-04-25T12:00:00Z',
-    'home_team': 'Alcaraz',
-    'away_team': 'Sinner',
+    'id': 'soccer_epl_ars_che_002',
+    'sport_key': 'soccer_epl',
+    'commence_time': '2026-04-10T14:00:00Z',
+    'home_team': 'Chelsea',
+    'away_team': 'Arsenal',
+    'bookmakers': [
+      {
+        'key': 'draftkings',
+        'title': 'DraftKings',
+        'last_update': '2026-04-09T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Arsenal', 'price': 245},
+              {'name': 'Chelsea', 'price': 285},
+              {'name': 'Draw', 'price': 340},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'fanduel',
+        'title': 'FanDuel',
+        'last_update': '2026-04-09T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Arsenal', 'price': 255},
+              {'name': 'Chelsea', 'price': 275},
+              {'name': 'Draw', 'price': 335},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'bet365',
+        'title': 'Bet365',
+        'last_update': '2026-04-09T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Arsenal', 'price': 240},
+              {'name': 'Chelsea', 'price': 280},
+              {'name': 'Draw', 'price': 365},
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    'id': 'soccer_ll_rma_bar_003',
+    'sport_key': 'soccer_spain_la_liga',
+    'commence_time': '2026-04-26T19:00:00Z',
+    'home_team': 'Barcelona',
+    'away_team': 'Real Madrid',
     'bookmakers': [
       {
         'key': 'draftkings',
@@ -459,8 +165,9 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Alcaraz', 'price': 205},
-              {'name': 'Sinner', 'price': 190},
+              {'name': 'Real Madrid', 'price': 235},
+              {'name': 'Barcelona', 'price': 295},
+              {'name': 'Draw', 'price': 355},
             ],
           },
         ],
@@ -473,21 +180,13 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Alcaraz', 'price': 190},
-              {'name': 'Sinner', 'price': 205},
+              {'name': 'Real Madrid', 'price': 225},
+              {'name': 'Barcelona', 'price': 320},
+              {'name': 'Draw', 'price': 365},
             ],
           },
         ],
       },
-    ],
-  },
-  {
-    'id': 'tennis_arb_2way_past',
-    'sport_key': 'tennis_atp',
-    'commence_time': '2026-04-01T12:00:00Z',
-    'home_team': 'Djokovic',
-    'away_team': 'Nadal',
-    'bookmakers': [
       {
         'key': 'bet365',
         'title': 'Bet365',
@@ -496,8 +195,9 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Djokovic', 'price': 210},
-              {'name': 'Nadal', 'price': 210},
+              {'name': 'Real Madrid', 'price': 230},
+              {'name': 'Barcelona', 'price': 310},
+              {'name': 'Draw', 'price': 380},
             ],
           },
         ],
@@ -505,11 +205,11 @@ const List<Map<String, dynamic>> mockOddsResponse = [
     ],
   },
   {
-    'id': 'non_arb_2way_future',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-05-01T00:00:00Z',
-    'home_team': 'Bucks',
-    'away_team': '76ers',
+    'id': 'tennis_atp_alc_sin_004',
+    'sport_key': 'tennis_atp_monte_carlo',
+    'commence_time': '2026-04-18T12:00:00Z',
+    'home_team': 'Sinner',
+    'away_team': 'Alcaraz',
     'bookmakers': [
       {
         'key': 'draftkings',
@@ -519,21 +219,12 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Bucks', 'price': 190},
-              {'name': '76ers', 'price': 190},
+              {'name': 'Alcaraz', 'price': 195},
+              {'name': 'Sinner', 'price': 195},
             ],
           },
         ],
       },
-    ],
-  },
-  {
-    'id': 'non_arb_2way_past',
-    'sport_key': 'basketball_nba',
-    'commence_time': '2026-04-01T00:00:00Z',
-    'home_team': 'Lakers',
-    'away_team': 'Clippers',
-    'bookmakers': [
       {
         'key': 'fanduel',
         'title': 'FanDuel',
@@ -542,8 +233,8 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Lakers', 'price': 190},
-              {'name': 'Clippers', 'price': 190},
+              {'name': 'Alcaraz', 'price': 210},
+              {'name': 'Sinner', 'price': 182},
             ],
           },
         ],
@@ -551,23 +242,50 @@ const List<Map<String, dynamic>> mockOddsResponse = [
     ],
   },
   {
-    'id': 'non_arb_3way_future',
-    'sport_key': 'soccer_epl',
-    'commence_time': '2026-06-01T15:00:00Z',
-    'home_team': 'Real Madrid',
-    'away_team': 'Barcelona',
+    'id': 'tennis_atp_djo_nad_005',
+    'sport_key': 'tennis_atp_monte_carlo',
+    'commence_time': '2026-04-05T12:00:00Z',
+    'home_team': 'Nadal',
+    'away_team': 'Djokovic',
     'bookmakers': [
       {
-        'key': 'bet365',
-        'title': 'Bet365',
-        'last_update': '2026-04-13T10:00:00Z',
+        'key': 'draftkings',
+        'title': 'DraftKings',
+        'last_update': '2026-04-04T10:00:00Z',
         'markets': [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Real Madrid', 'price': 250},
-              {'name': 'Barcelona', 'price': 250},
-              {'name': 'Draw', 'price': 250},
+              {'name': 'Djokovic', 'price': 230},
+              {'name': 'Nadal', 'price': 165},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'fanduel',
+        'title': 'FanDuel',
+        'last_update': '2026-04-04T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Djokovic', 'price': 215},
+              {'name': 'Nadal', 'price': 180},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'bet365',
+        'title': 'Bet365',
+        'last_update': '2026-04-04T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Djokovic', 'price': 240},
+              {'name': 'Nadal', 'price': 162},
             ],
           },
         ],
@@ -575,11 +293,11 @@ const List<Map<String, dynamic>> mockOddsResponse = [
     ],
   },
   {
-    'id': 'non_arb_3way_past',
-    'sport_key': 'soccer_epl',
-    'commence_time': '2026-01-01T15:00:00Z',
-    'home_team': 'Inter',
-    'away_team': 'Milan',
+    'id': 'tennis_atp_med_zve_006',
+    'sport_key': 'tennis_atp_monte_carlo',
+    'commence_time': '2026-04-19T10:00:00Z',
+    'home_team': 'Zverev',
+    'away_team': 'Medvedev',
     'bookmakers': [
       {
         'key': 'draftkings',
@@ -589,9 +307,36 @@ const List<Map<String, dynamic>> mockOddsResponse = [
           {
             'key': 'h2h',
             'outcomes': [
-              {'name': 'Inter', 'price': 250},
-              {'name': 'Milan', 'price': 250},
-              {'name': 'Draw', 'price': 250},
+              {'name': 'Medvedev', 'price': 205},
+              {'name': 'Zverev', 'price': 185},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'fanduel',
+        'title': 'FanDuel',
+        'last_update': '2026-04-13T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Medvedev', 'price': 188},
+              {'name': 'Zverev', 'price': 202},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'bet365',
+        'title': 'Bet365',
+        'last_update': '2026-04-13T10:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Medvedev', 'price': 200},
+              {'name': 'Zverev', 'price': 190},
             ],
           },
         ],

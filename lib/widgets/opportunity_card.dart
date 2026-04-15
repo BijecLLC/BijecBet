@@ -119,6 +119,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
     final rawInvestment = double.tryParse(investmentInput) ?? 100.0;
     final totalInvestment = Decimal.parse(rawInvestment.toString());
 
+    final odds = widget.opportunity.outcomes.map((o) => o.price).toList();
     final rawStakes = ArbEngine.individualStakes(
       decimalOdds: widget.opportunity.outcomes.map((x) => x.price).toList(),
       totalInvestment: totalInvestment,
@@ -174,7 +175,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      'Books ${widget.opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
+                      'Books: ${widget.opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
                       style: Theme.of(
                         context,
                       ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
@@ -196,36 +197,17 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
               ),
             ],
           ),
-          Text(
-            'Books: ${widget.opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ')}',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
-          ),
           const SizedBox(height: 6),
-          // Calculate stakes for display
-          Builder(
-            builder: (context) {
-              final investmentStr = ref.watch(opportunityInvestmentInputProvider(widget.opportunity.favoriteId));
-              final totalInvestment = Decimal.tryParse(investmentStr) ?? Decimal.fromInt(100);
-              
-              final odds = widget.opportunity.outcomes.map((o) => o.price).toList();
-              final stakes = ArbEngine.individualStakes(
-                decimalOdds: odds,
-                totalInvestment: totalInvestment,
-              );
-              
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var i = 0; i < widget.opportunity.outcomes.length; i++)
-                    Text(
-                      'Bet \$${_formatDecimal(stakes[i], 2)} on ${widget.opportunity.outcomes[i].name} (${widget.opportunity.outcomes[i].bookmakerTitle}) @ ${widget.opportunity.outcomes[i].price}',
-                      style: theme.textTheme.bodySmall?.copyWith(color: mutedTextColor),
-                    ),
-                ],
-              );
-            },
+          // Display stakes for each outcome
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < widget.opportunity.outcomes.length; i++)
+                Text(
+                  'Bet \$${_formatDecimal(finalStakes[i], 2)} on ${widget.opportunity.outcomes[i].name} (${widget.opportunity.outcomes[i].bookmakerTitle}) @ ${widget.opportunity.outcomes[i].price}',
+                  style: theme.textTheme.bodySmall?.copyWith(color: mutedTextColor),
+                ),
+            ],
           ),
           const SizedBox(height: 6),
           Text(

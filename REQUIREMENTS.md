@@ -541,3 +541,37 @@ This section should be dated and also numbered for prioty (number removed once c
  -Post-Wipe Feedback: Show a SnackBar confirming the wipe.
 
  -Navigation: Automatically pop the user back to the Dashboard or a "Setup Required" state to ensure the UI reflects the missing credentials.
+
+[x] **5.10.1: Fixing Mock Data**
+
+- Update lib/core/constants/mock_data.dart. Generate 6 realistic ArbOpportunity objects using the List<ArbOutcome> format.
+
+- Three 3-way Soccer arbs (1X2) with ROIs between 2% and 5%. (Example math: Odds 2.1, 3.4, 4.2).
+
+- Three 2-way Tennis arbs with ROIs between 1% and 4%.
+
+- Ensure commenceTime is varied (some in the future, some in the past).
+
+- Constraint: All odds must be realistic for major bookmakers (e.g., no 10.0 odds for a heavy favorite).
+
+[x] **5.10.2: Refactoring Calculation Logic**
+
+- Refactor the staking logic in lib/core/utils/arb_engine.dart (and the associated Riverpod providers) to be market-agnostic.
+
+- Instead of assuming two outcomes, the function should accept a List<ArbOutcome>.
+
+- Implement the universal staking formula: Stake_i = TotalInvestment / (ArbPercentage * Odds_i).
+
+- Ensure the sum of all calculated stakes perfectly matches the totalInvestment input to avoid rounding errors.
+
+[x] **5.10.3Fixing UI Error**
+
+- Locate the ArbDetailScreen (or the widget handling the Investment Input).
+
+- Remove the hardcoded error message that says 'pick one with only two-way'.
+
+- Update the UI to dynamically build the 'Required Stakes' display using a ListView.builder or Column based on the length of opportunity.outcomes.
+
+- If there are 3 outcomes, it should show 3 rows (Home, Draw, Away) with their respective stakes and bookmakers.
+
+- Ensure the 'Total Profit' calculation updates in real-time as the user types the investment amount.
