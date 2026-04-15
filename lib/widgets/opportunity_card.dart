@@ -27,7 +27,8 @@ class CyberOpportunityCard extends ConsumerStatefulWidget {
   final Future<void> Function() onFavoritePressed;
 
   @override
-  ConsumerState<CyberOpportunityCard> createState() => _CyberOpportunityCardState();
+  ConsumerState<CyberOpportunityCard> createState() =>
+      _CyberOpportunityCardState();
 }
 
 class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
@@ -64,7 +65,6 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
     }
     }
     */
-  
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +109,8 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
         : colorScheme.outline.withValues(alpha: 0.65);
 
     // Stealth Mode Calculations
-    final stealthSettings = stealthAsync.asData?.value ?? const StealthSettings();
+    final stealthSettings =
+        stealthAsync.asData?.value ?? const StealthSettings();
     final isStealthActive = stealthSettings.stealthModeEnabled;
 
     // Use specific investment if set, else fallback to $100
@@ -127,12 +128,9 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
 
     final List<Decimal> finalStakes;
     if (isStealthActive) {
-      finalStakes =
-          rawStakes
-              .map(
-                (s) => _roundStake(s, stealthSettings.roundingIncrement),
-              )
-              .toList(growable: false);
+      finalStakes = rawStakes
+          .map((s) => _roundStake(s, stealthSettings.roundingIncrement))
+          .toList(growable: false);
     } else {
       finalStakes = rawStakes;
     }
@@ -151,7 +149,6 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
         marketTypes: [_mapMarketType(widget.opportunity.marketLabel)],
       ),
     );
-    
 
     final card = Container(
       decoration: BoxDecoration(
@@ -198,17 +195,8 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
             ],
           ),
           const SizedBox(height: 6),
+
           // Display stakes for each outcome
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = 0; i < widget.opportunity.outcomes.length; i++)
-                Text(
-                  'Bet \$${_formatDecimal(finalStakes[i], 2)} on ${widget.opportunity.outcomes[i].name} (${widget.opportunity.outcomes[i].bookmakerTitle}) @ ${widget.opportunity.outcomes[i].price}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: mutedTextColor),
-                ),
-            ],
-          ),
           const SizedBox(height: 6),
           Text(
             topMarket == null

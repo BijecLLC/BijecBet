@@ -110,7 +110,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     alignment: Alignment.centerLeft,
                     child: FilledButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pushNamed(CalculatorScreen.routeName);
+                        Navigator.of(
+                          context,
+                        ).pushNamed(CalculatorScreen.routeName);
                       },
                       icon: const Icon(Icons.calculate_outlined),
                       label: const Text('Open Manual Arb Calculator'),
@@ -129,16 +131,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(height: 6),
                   sportsByKeyAsync.when(
                     data: (sportsByKey) {
-                      final sortedEntries = sportsByKey.entries.toList(
-                        growable: false,
-                      )..sort((a, b) {
-                        final aPinned = favoriteSportKeys.contains(a.key);
-                        final bPinned = favoriteSportKeys.contains(b.key);
-                        if (aPinned != bPinned) {
-                          return aPinned ? -1 : 1;
-                        }
-                        return a.value.compareTo(b.value);
-                      });
+                      final sortedEntries =
+                          sportsByKey.entries.toList(growable: false)
+                            ..sort((a, b) {
+                              final aPinned = favoriteSportKeys.contains(a.key);
+                              final bPinned = favoriteSportKeys.contains(b.key);
+                              if (aPinned != bPinned) {
+                                return aPinned ? -1 : 1;
+                              }
+                              return a.value.compareTo(b.value);
+                            });
                       final visibleEntries = _showAllSports
                           ? sortedEntries
                           : sortedEntries.take(5).toList(growable: false);
@@ -175,9 +177,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           if (canExpand)
                             TextButton(
                               onPressed: () {
-                                setState(() => _showAllSports = !_showAllSports);
+                                setState(
+                                  () => _showAllSports = !_showAllSports,
+                                );
                               },
-                              child: Text(_showAllSports ? 'See less' : 'See more'),
+                              child: Text(
+                                _showAllSports ? 'See less' : 'See more',
+                              ),
                             ),
                         ],
                       );
@@ -195,13 +201,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Text('Failed to load sports: $error'),
                     ),
                   ),
-                  if (favoriteSportKeys.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('Showing opportunities for pinned sports only.'),
-                    ),
-                  ],
+
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -219,7 +219,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           child: Text('No sportsbooks available yet.'),
                         );
                       }
-                      final textScale = MediaQuery.textScalerOf(context).scale(1);
+                      final textScale = MediaQuery.textScalerOf(
+                        context,
+                      ).scale(1);
                       final chipVerticalPadding = ((textScale - 1) * 3).clamp(
                         0.0,
                         3.0,
@@ -255,12 +257,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               horizontal: 8,
                               vertical: chipVerticalPadding,
                             ),
-                            selectedColor: QuantTheme.action.withValues(alpha: 0.3),
+                            selectedColor: QuantTheme.action.withValues(
+                              alpha: 0.3,
+                            ),
                             checkmarkColor: QuantTheme.textPrimary,
                             side: BorderSide(
                               color: selectAllSelected
                                   ? QuantTheme.action
-                                  : QuantTheme.textMuted.withValues(alpha: 0.65),
+                                  : QuantTheme.textMuted.withValues(
+                                      alpha: 0.65,
+                                    ),
                             ),
                             onSelected: (_) async {
                               await ref
@@ -273,17 +279,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           (entry) => Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: FilterChip(
-                              selected: favoriteBookmakerKeys.contains(entry.key),
+                              selected: favoriteBookmakerKeys.contains(
+                                entry.key,
+                              ),
                               padding: EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: chipVerticalPadding,
                               ),
-                              selectedColor: QuantTheme.action.withValues(alpha: 0.3),
+                              selectedColor: QuantTheme.action.withValues(
+                                alpha: 0.3,
+                              ),
                               checkmarkColor: QuantTheme.textPrimary,
                               side: BorderSide(
                                 color: favoriteBookmakerKeys.contains(entry.key)
                                     ? QuantTheme.action
-                                    : QuantTheme.textMuted.withValues(alpha: 0.65),
+                                    : QuantTheme.textMuted.withValues(
+                                        alpha: 0.65,
+                                      ),
                               ),
                               avatar: CircleAvatar(
                                 radius: avatarRadius,
@@ -298,7 +310,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                               label: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.sizeOf(context).width * 0.32,
+                                  maxWidth:
+                                      MediaQuery.sizeOf(context).width * 0.32,
                                 ),
                                 child: Text(
                                   entry.value,
@@ -308,7 +321,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                               onSelected: (_) async {
                                 await ref
-                                    .read(favoriteBookmakerKeysProvider.notifier)
+                                    .read(
+                                      favoriteBookmakerKeysProvider.notifier,
+                                    )
                                     .toggleFavoriteBookmaker(entry.key);
                               },
                             ),
@@ -342,7 +357,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         value: sortOption,
                         onChanged: (value) {
                           if (value != null) {
-                            ref.read(dashboardSortOptionProvider.notifier).state =
+                            ref
+                                    .read(dashboardSortOptionProvider.notifier)
+                                    .state =
                                 value;
                           }
                         },
@@ -358,27 +375,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ],
                       ),
                       const Spacer(),
-                      ref.watch(hideStartedGamesProvider).when(
-                        data: (hideStarted) => Row(
-                          children: [
-                            const Text('Hide started'),
-                            const SizedBox(width: 4),
-                            Transform.scale(
-                              scale: 0.8,
-                              child: Switch(
-                                value: hideStarted,
-                                onChanged: (_) {
-                                  ref
-                                      .read(hideStartedGamesProvider.notifier)
-                                      .toggleHideStarted();
-                                },
-                              ),
+                      ref
+                          .watch(hideStartedGamesProvider)
+                          .when(
+                            data: (hideStarted) => Row(
+                              children: [
+                                const Text('Hide started'),
+                                const SizedBox(width: 4),
+                                Transform.scale(
+                                  scale: 0.8,
+                                  child: Switch(
+                                    value: hideStarted,
+                                    onChanged: (_) {
+                                      ref
+                                          .read(
+                                            hideStartedGamesProvider.notifier,
+                                          )
+                                          .toggleHideStarted();
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          ),
                       TextButton.icon(
                         onPressed: () {
                           setState(() {
@@ -410,7 +431,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   favoriteIds: favoriteIds,
                   singleCardViewportHeight: dynamicSingleCardViewportHeight,
                   perCardEstimatedHeight: dynamicPerCardEstimatedHeight,
-                  scaffoldBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  scaffoldBackgroundColor: Theme.of(
+                    context,
+                  ).scaffoldBackgroundColor,
                   onOpenDetails: (opportunity) {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
@@ -464,22 +487,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       );
                     }
                     final opportunity = visibleOpportunities[itemIndex];
-                    final isFavorite = favoriteIds.contains(opportunity.favoriteId);
+                    final isFavorite = favoriteIds.contains(
+                      opportunity.favoriteId,
+                    );
                     return CyberOpportunityCard(
                       opportunity: opportunity,
                       isFavorite: isFavorite,
                       onOpenDetails: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) =>
-                                SportsEventDetailScreen(opportunity: opportunity),
+                            builder: (_) => SportsEventDetailScreen(
+                              opportunity: opportunity,
+                            ),
                           ),
                         );
                       },
                       onFavoritePressed: () async {
                         await ref
                             .read(favoriteOpportunityIdsProvider.notifier)
-                          .toggleFavorite(opportunity.favoriteId);
+                            .toggleFavorite(opportunity.favoriteId);
                       },
                     );
                   }, childCount: visibleOpportunities.length * 2 - 1),
@@ -585,9 +611,9 @@ class _PinnedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
       padding: const EdgeInsets.only(bottom: _sectionPadding),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.25,
-          ),
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
           border: Border.all(
             color: Theme.of(context).dividerColor.withValues(alpha: 0.65),
           ),
@@ -610,8 +636,9 @@ class _PinnedSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
                     Text(
                       '${viewportHeight.toStringAsFixed(0)} / ${_fullListHeight.toStringAsFixed(0)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).textTheme.bodySmall?.color
-                            ?.withValues(alpha: 0.75),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.75),
                       ),
                     ),
                   ],
@@ -710,7 +737,9 @@ class _OpportunitySearchDelegate extends SearchDelegate<ArbOpportunity?> {
           final sportLabel =
               (sportsByKey[opportunity.sportKey] ?? opportunity.sportKey)
                   .toLowerCase();
-          final bookmakerHaystack = opportunity.outcomes.map((o) => o.bookmakerTitle).join(' ');
+          final bookmakerHaystack = opportunity.outcomes
+              .map((o) => o.bookmakerTitle)
+              .join(' ');
           final haystack =
               '${opportunity.eventName} ${opportunity.marketLabel} '
                       '$bookmakerHaystack '
@@ -735,7 +764,9 @@ class _OpportunitySearchDelegate extends SearchDelegate<ArbOpportunity?> {
         final isFavorite = favoriteOpportunityIds.contains(
           opportunity.favoriteId,
         );
-        final bookmakerTitles = opportunity.outcomes.map((o) => o.bookmakerTitle).join(' / ');
+        final bookmakerTitles = opportunity.outcomes
+            .map((o) => o.bookmakerTitle)
+            .join(' / ');
         return ListTile(
           title: Text(opportunity.eventName),
           subtitle: Text(

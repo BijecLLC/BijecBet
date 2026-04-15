@@ -343,4 +343,148 @@ const List<Map<String, dynamic>> mockOddsResponse = [
       },
     ],
   },
+  {
+    'id': 'nba_dal_nyk_004',
+    'sport_key': 'basketball_nba',
+    'commence_time': '2026-03-06T05:00:00Z',
+    'home_team': 'New York Knicks',
+    'away_team': 'Dallas Mavericks',
+    'bookmakers': [
+      {
+        'key': 'espnbet',
+        'title': 'ESPN BET',
+        'last_update': '2026-03-05T03:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Dallas Mavericks', 'price': 118},
+              {'name': 'New York Knicks', 'price': -126},
+            ],
+          },
+          {
+            'key': 'spreads',
+            'outcomes': [
+              {'name': 'Dallas Mavericks', 'price': -110, 'point': 2.0},
+              {'name': 'New York Knicks', 'price': -110, 'point': -2.0},
+            ],
+          },
+          {
+            'key': 'totals',
+            'outcomes': [
+              {'name': 'Over', 'price': -114, 'point': 218.5},
+              {'name': 'Under', 'price': -104, 'point': 218.5},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'wynnbet',
+        'title': 'WynnBET',
+        'last_update': '2026-03-05T03:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Dallas Mavericks', 'price': 105},
+              {'name': 'New York Knicks', 'price': -102},
+            ],
+          },
+          {
+            'key': 'spreads',
+            'outcomes': [
+              {'name': 'Dallas Mavericks', 'price': -108, 'point': 2.5},
+              {'name': 'New York Knicks', 'price': -112, 'point': -2.5},
+            ],
+          },
+          {
+            'key': 'totals',
+            'outcomes': [
+              {'name': 'Over', 'price': -102, 'point': 218.5},
+              {'name': 'Under', 'price': -118, 'point': 218.5},
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    'id': 'nfl_kc_buf_005',
+    'sport_key': 'americanfootball_nfl',
+    'commence_time': '2026-03-06T20:25:00Z',
+    'home_team': 'Buffalo Bills',
+    'away_team': 'Kansas City Chiefs',
+    'bookmakers': [
+      {
+        'key': 'betrivers',
+        'title': 'BetRivers',
+        'last_update': '2026-03-05T03:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs', 'price': 112},
+              {'name': 'Buffalo Bills', 'price': -118},
+            ],
+          },
+          {
+            'key': 'spreads',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs', 'price': -110, 'point': 1.5},
+              {'name': 'Buffalo Bills', 'price': -110, 'point': -1.5},
+            ],
+          },
+          {
+            'key': 'totals',
+            'outcomes': [
+              {'name': 'Over', 'price': -108, 'point': 48.5},
+              {'name': 'Under', 'price': -112, 'point': 48.5},
+            ],
+          },
+          {
+            'key': 'outrights',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs AFC Winner', 'price': 240},
+              {'name': 'Buffalo Bills AFC Winner', 'price': 255},
+            ],
+          },
+        ],
+      },
+      {
+        'key': 'hardrockbet',
+        'title': 'Hard Rock Bet',
+        'last_update': '2026-03-05T03:00:00Z',
+        'markets': [
+          {
+            'key': 'h2h',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs', 'price': 102},
+              {'name': 'Buffalo Bills', 'price': 104},
+            ],
+          },
+          {
+            'key': 'spreads',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs', 'price': -108, 'point': 2.0},
+              {'name': 'Buffalo Bills', 'price': -112, 'point': -2.0},
+            ],
+          },
+          {
+            'key': 'totals',
+            'outcomes': [
+              {'name': 'Over', 'price': -104, 'point': 48.5},
+              {'name': 'Under', 'price': -116, 'point': 48.5},
+            ],
+          },
+          {
+            'key': 'outrights',
+            'outcomes': [
+              {'name': 'Kansas City Chiefs AFC Winner', 'price': 265},
+              {'name': 'Buffalo Bills AFC Winner', 'price': 235},
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
