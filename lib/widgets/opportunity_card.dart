@@ -121,7 +121,7 @@ class _CyberOpportunityCardState extends ConsumerState<CyberOpportunityCard> {
 
     final odds = widget.opportunity.outcomes.map((o) => o.price).toList();
     final rawStakes = ArbEngine.individualStakes(
-      decimalOdds: odds,
+      decimalOdds: widget.opportunity.outcomes.map((x) => x.price).toList(),
       totalInvestment: totalInvestment,
     );
 

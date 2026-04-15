@@ -82,8 +82,9 @@ final dailyRiskAverageProvider = Provider<double>((ref) {
     data: (opportunities) {
       final stealthSettings =
           stealthAsync.asData?.value ?? const StealthSettings();
-      final pinnedOpportunities =
-          opportunities.where((o) => favoriteIds.contains(o.favoriteId));
+      final pinnedOpportunities = opportunities.where(
+        (o) => favoriteIds.contains(o.favoriteId),
+      );
 
       if (pinnedOpportunities.isEmpty) return 0.0;
 
@@ -94,14 +95,14 @@ final dailyRiskAverageProvider = Provider<double>((ref) {
         // Use a standard $100 investment for global health calculation
         final investment = Decimal.fromInt(100);
         final stakes = ArbEngine.individualStakes(
-          decimalOdds: [opp.decimalOddsA, opp.decimalOddsB],
+          decimalOdds: opp.outcomes.map((x) => x.price).toList(),
           totalInvestment: investment,
         );
 
         final riskOutput = calculateRisk(
           input: RiskInput(
-            arbPercent: double.tryParse(opp.profitMarginPercent.toString()) ??
-                0.0,
+            arbPercent:
+                double.tryParse(opp.profitMarginPercent.toString()) ?? 0.0,
             totalInvestment: 100.0,
             stakeDistribution: Float64List.fromList(
               stakes.map((s) => s.toDouble()).toList(),
@@ -200,11 +201,11 @@ class OddsApiKeyNotifier extends AsyncNotifier<String?> {
     if (success) {
       // Clear runtime config to ensure no fallback key is accidentally used
       AppConfig.clearRuntimeOddsApiKey();
-      
+
       // Reactivity: Notify listeners by setting state to null
       state = const AsyncData(null);
     }
-    
+
     return success;
   }
 }
@@ -720,8 +721,9 @@ List<ArbOpportunity> _filterOpportunities({
   }
   return bySport
       .where(
-        (opportunity) =>
-            opportunity.outcomes.any((o) => activeBookmakerKeys.contains(o.bookmakerKey)),
+        (opportunity) => opportunity.outcomes.any(
+          (o) => activeBookmakerKeys.contains(o.bookmakerKey),
+        ),
       )
       .toList(growable: false);
 }
@@ -823,7 +825,7 @@ List<ArbOpportunity> _extractArbOpportunities(
       if (outcomeQuotes.length < 2 || outcomeQuotes.length > 3) {
         continue;
       }
-      
+
       final decimalOdds = outcomeQuotes.map((q) => q.decimalOdds).toList();
       final arbSum = ArbEngine.arbitragePercentage(decimalOdds);
       if (!ArbEngine.isArbitrageOpportunity(decimalOdds)) {
@@ -831,14 +833,13 @@ List<ArbOpportunity> _extractArbOpportunities(
       }
       // ROI %
       final profitMarginPercent = ArbEngine.calculateRoi(arbSum);
-      
+
       DateTime freshestUpdate = DateTime.fromMillisecondsSinceEpoch(0);
       for (final q in outcomeQuotes) {
         if (q.lastUpdatedAt.isAfter(freshestUpdate)) {
           freshestUpdate = q.lastUpdatedAt;
         }
       }
- 
 
       // Add the opportunitites to the list
       opportunities.add(
@@ -847,12 +848,16 @@ List<ArbOpportunity> _extractArbOpportunities(
           sportKey: sportKey,
           eventName: eventName,
           marketLabel: _marketLabel(marketKey),
-          outcomes: outcomeQuotes.map((q) => ArbOutcome(
-            name: q.name,
-            price: q.decimalOdds,
-            bookmakerKey: q.bookmakerKey,
-            bookmakerTitle: q.bookmakerTitle,
-          )).toList(),
+          outcomes: outcomeQuotes
+              .map(
+                (q) => ArbOutcome(
+                  name: q.name,
+                  price: q.decimalOdds,
+                  bookmakerKey: q.bookmakerKey,
+                  bookmakerTitle: q.bookmakerTitle,
+                ),
+              )
+              .toList(),
           arbitrageSum: arbSum,
           profitMarginPercent: profitMarginPercent,
           commenceTime: commenceTime,
@@ -886,9 +891,11 @@ String _arbOpportunityIdentityKey(ArbOpportunity opportunity) {
   final kickoffEpochMillis = opportunity.commenceTime
       .toUtc()
       .millisecondsSinceEpoch;
-  final normalizedBooks = opportunity.outcomes
-      .map((o) => o.bookmakerKey.trim().toLowerCase())
-      .toList()..sort();
+  final normalizedBooks =
+      opportunity.outcomes
+          .map((o) => o.bookmakerKey.trim().toLowerCase())
+          .toList()
+        ..sort();
   return '$normalizedSport|$normalizedMatchup|$kickoffEpochMillis|${normalizedBooks.join("|")}';
 }
 
