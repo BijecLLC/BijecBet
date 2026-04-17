@@ -4,6 +4,10 @@ class AppConfig {
   static final RegExp _oddsApiKeyPattern = RegExp(r'^[A-Za-z0-9]{32}$');
   static String? _userProvidedOddsApiKey;
 
+  static bool isLocalMode = false;
+  static String localOddsPath = '';
+  static String localSportsPath = '';
+
   static Future<void> load() async {
     await dotenv.load(fileName: '.env');
   }

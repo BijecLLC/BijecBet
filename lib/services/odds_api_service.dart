@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -84,6 +85,26 @@ class OddsApiService {
     _log(
       'fetchOdds(sportKey: ${sportKey ?? 'all'}, forceRefresh: $forceRefresh) start',
     );
+
+    if (AppConfig.isLocalMode) {
+      _log('fetchOdds reading from local file: ${AppConfig.localOddsPath}');
+      final file = File(AppConfig.localOddsPath);
+      if (!await file.exists()) {
+        throw OddsApiServiceException(
+          'Local odds file not found at ${AppConfig.localOddsPath}',
+        );
+      }
+      final contents = await file.readAsString();
+      final decoded = jsonDecode(contents) as List<dynamic>;
+      final remote = decoded
+          .map((entry) => Map<String, dynamic>.from(entry as Map))
+          .toList(growable: false);
+      final normalizedRemote = _normalizeOddsPayload(remote);
+      final filtered = _filterOddsBySport(normalizedRemote, sportKey);
+      _log('fetchOdds local success: ${filtered.length} events after filtering');
+      return filtered;
+    }
+
     final cached = await _readCache(
       _getCacheKey(_oddsCacheKey),
       forceRefresh: forceRefresh,

@@ -284,11 +284,16 @@ class _ApiKeysSettingsTab extends ConsumerStatefulWidget {
       _ApiKeysSettingsTabState();
 }
 
+enum _DataSource { live, local }
+
 class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   final TextEditingController _oddsApiKeyController = TextEditingController();
+  final TextEditingController _localOddsPathController = TextEditingController();
+  final TextEditingController _localSportsCatalogPathController = TextEditingController();
   bool _obscureOddsApiKey = true;
   bool _isSaving = false;
   String? _remainingRequests;
+  _DataSource _selectedDataSource = _DataSource.live;
 
   @override
   void initState() {
@@ -299,6 +304,8 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   @override
   void dispose() {
     _oddsApiKeyController.dispose();
+    _localOddsPathController.dispose();
+    _localSportsCatalogPathController.dispose();
     super.dispose();
   }
 
@@ -461,7 +468,27 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('OddsAPI', style: Theme.of(context).textTheme.titleMedium),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Live Odds API', style: Theme.of(context).textTheme.titleMedium),
+                    if (_selectedDataSource == _DataSource.live)
+                      Chip(
+                        label: const Text('Active Source'),
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        side: BorderSide.none,
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDataSource = _DataSource.live;
+                          });
+                        },
+                        child: const Text('Activate'),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 const Text(
                   'Manage your OddsAPI key securely. The key stays encrypted on this device.',
@@ -525,7 +552,138 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        _DataSourceConfigCard(
+          selectedSource: _selectedDataSource,
+          onSourceChanged: (source) {
+            setState(() {
+              _selectedDataSource = source;
+            });
+          },
+          oddsPathController: _localOddsPathController,
+          catalogPathController: _localSportsCatalogPathController,
+        ),
       ],
+    );
+  }
+}
+
+class _DataSourceConfigCard extends StatelessWidget {
+  const _DataSourceConfigCard({
+    required this.selectedSource,
+    required this.onSourceChanged,
+    required this.oddsPathController,
+    required this.catalogPathController,
+  });
+
+  final _DataSource selectedSource;
+  final ValueChanged<_DataSource> onSourceChanged;
+  final TextEditingController oddsPathController;
+  final TextEditingController catalogPathController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Local Files',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                if (selectedSource == _DataSource.local)
+                  Chip(
+                    label: const Text('Active Source'),
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    side: BorderSide.none,
+                  )
+                else
+                  OutlinedButton(
+                    onPressed: () => onSourceChanged(_DataSource.local),
+                    child: const Text('Activate'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Application will pull from these local machine files instead of hitting the live network.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: oddsPathController,
+              decoration: const InputDecoration(
+                labelText: 'Odds Data Path',
+                hintText: 'e.g. /path/to/odds.json',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.description_outlined),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const ExpansionTile(
+              title: Text('Required Odds JSON Format', style: TextStyle(fontSize: 14)),
+              tilePadding: EdgeInsets.zero,
+              children: [
+                SelectableText(
+                  '''[
+  {
+      "id": "unique_event_id_string",
+      "sport_key": "sport_key_matching_catalog",
+      "commence_time": "YYYY-MM-DDTHH:MM:SSZ",
+      "home_team": "Team A Name",
+      "away_team": "Team B Name",
+      "bookmakers": [
+          {
+              "key": "bookmaker_key_identifier",
+              "title": "Display Name of Bookmaker",
+              "last_update": "YYYY-MM-DDTHH:MM:SSZ",
+              "markets": [
+                  {
+                      "key": "h2h", // or "spreads", "totals", "outrights"
+                      "outcomes": [
+                          { "name": "Team A Name", "price": 150 }, // price is American odds
+                          { "name": "Team B Name", "price": -170 }
+                          // Note: For spreads/totals, include a "point" field
+                          // { "name": "Over", "price": -110, "point": 45.5 }
+                      ]
+                  }
+              ]
+          }
+      ]
+  }
+]''',
+                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: catalogPathController,
+              decoration: const InputDecoration(
+                labelText: 'Sports Catalog Path',
+                hintText: 'e.g. /path/to/sports.json',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.list_alt_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: () {
+                  // Placeholder for Step 6.4 Apply Local Config
+                },
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Apply Local Config'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
