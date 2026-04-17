@@ -630,7 +630,7 @@ This section should be dated and also numbered for prioty (number removed once c
         > ]
         > ```
 
-- [ ] __Step 6.3: Local Sports Catalog Integration & Explainer__
+- [x] __Step 6.3: Local Sports Catalog Integration & Explainer__
     - **Logic Refactor**: Mirror the logic from 6.1.2 for `fetchSports`. Any query for `availableSportsByKeyProvider` or `availableBookmakersByKeyProvider` must read from the provided local sports catalog path when the "Local File" mode is active.
     - **UI Explainer**: Add a corresponding `ExpansionTile` or modal beneath the `Sports Catalog Path` input showing the required array format:
         > **Required Sports Catalog JSON Format:**
@@ -655,8 +655,8 @@ This section should be dated and also numbered for prioty (number removed once c
         > ]
         > ```
 
-- [ ] __Step 6.4: Local Persistence & Reactivity__
+- [x] __Step 6.4: Local Persistence & Reactivity__
     - **The Action**: Add an "Apply Local Config" save button at the bottom of the configuration section.
     - **Hardware-Only Storage**: Persist the chosen file paths and the data source mode strictly to `SharedPreferences`.
-    - **Cloud Blacklist**: Explicitly **DO NOT** sync these local machine paths to the user's Firestore document (`users/{uid}/preferences`), as directory structures are unique to the hardware and non-portable.
+    - **Cloud Blacklist**: Explicitly DO NOT sync these local machine paths to the user's Firestore document. Paths like `/Users/jack/Desktop/odds.json` are unique to the hardware and non-portable.
     - **Reactivity**: Ensure saving updates `AppConfig` immediately and invalidates the `rawOddsProvider` and `availableSportsByKeyProvider` to trigger an instant UI refresh with the newly selected local data.

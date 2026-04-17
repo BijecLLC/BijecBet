@@ -299,6 +299,24 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   void initState() {
     super.initState();
     _loadSavedOddsApiKey();
+    _loadLocalConfig();
+  }
+
+  void _loadLocalConfig() {
+    final configAsync = ref.read(localDataSourceConfigProvider);
+    if (configAsync.hasValue) {
+      final config = configAsync.value!;
+      _selectedDataSource =
+          config.isLocalMode ? _DataSource.local : _DataSource.live;
+      _localOddsPathController.text = config.oddsPath;
+      _localSportsCatalogPathController.text = config.sportsPath;
+    } else {
+      // Fallback to AppConfig if provider is still loading
+      _selectedDataSource =
+          AppConfig.isLocalMode ? _DataSource.local : _DataSource.live;
+      _localOddsPathController.text = AppConfig.localOddsPath;
+      _localSportsCatalogPathController.text = AppConfig.localSportsPath;
+    }
   }
 
   @override
@@ -457,6 +475,27 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
     }
   }
 
+  Future<void> _saveLocalConfig() async {
+    final oddsPath = _localOddsPathController.text.trim();
+    final sportsPath = _localSportsCatalogPathController.text.trim();
+
+    final config = LocalDataSourceConfig(
+      isLocalMode: _selectedDataSource == _DataSource.local,
+      oddsPath: oddsPath,
+      sportsPath: sportsPath,
+    );
+
+    await ref.read(localDataSourceConfigProvider.notifier).updateConfig(config);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Local configuration applied successfully.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -562,6 +601,7 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
           },
           oddsPathController: _localOddsPathController,
           catalogPathController: _localSportsCatalogPathController,
+          onApplyConfig: _saveLocalConfig,
         ),
       ],
     );
@@ -574,12 +614,14 @@ class _DataSourceConfigCard extends StatelessWidget {
     required this.onSourceChanged,
     required this.oddsPathController,
     required this.catalogPathController,
+    required this.onApplyConfig,
   });
 
   final _DataSource selectedSource;
   final ValueChanged<_DataSource> onSourceChanged;
   final TextEditingController oddsPathController;
   final TextEditingController catalogPathController;
+  final VoidCallback onApplyConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -670,13 +712,39 @@ class _DataSourceConfigCard extends StatelessWidget {
                 prefixIcon: Icon(Icons.list_alt_outlined),
               ),
             ),
+            const SizedBox(height: 8),
+            const ExpansionTile(
+              title: Text('Required Sports Catalog JSON Format', style: TextStyle(fontSize: 14)),
+              tilePadding: EdgeInsets.zero,
+              children: [
+                SelectableText(
+                  '''[
+  {
+      "key": "americanfootball_ncaaf",
+      "group": "American Football",
+      "title": "NCAAF",
+      "description": "US College Football",
+      "active": true,
+      "has_outrights": false
+  },
+  {
+      "key": "americanfootball_nfl",
+      "group": "American Football",
+      "title": "NFL",
+      "description": "US Football",
+      "active": true,
+      "has_outrights": false
+  }
+]''',
+                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
-                onPressed: () {
-                  // Placeholder for Step 6.4 Apply Local Config
-                },
+                onPressed: onApplyConfig,
                 icon: const Icon(Icons.check_circle_outline),
                 label: const Text('Apply Local Config'),
               ),

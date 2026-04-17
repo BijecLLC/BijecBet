@@ -46,12 +46,33 @@ class OddsApiService {
     return '${baseKey}_$uid';
   }
 
-  void _log(String message) {}
+  void _log(String message) {
+    final timestamp = DateTime.now().toIso8601String();
+    print('[$timestamp] $message');
+  }
 
   Future<List<Map<String, dynamic>>> fetchSports({
     bool forceRefresh = false,
   }) async {
     _log('fetchSports(forceRefresh: $forceRefresh) start');
+
+    if (AppConfig.isLocalMode) {
+      _log('fetchSports reading from local file: ${AppConfig.localSportsPath}');
+      final file = File(AppConfig.localSportsPath);
+      if (!await file.exists()) {
+        throw OddsApiServiceException(
+          'Local sports file not found at ${AppConfig.localSportsPath}',
+        );
+      }
+      final contents = await file.readAsString();
+      final decoded = jsonDecode(contents) as List<dynamic>;
+      final remote = decoded
+          .map((entry) => Map<String, dynamic>.from(entry as Map))
+          .toList(growable: false);
+      _log('fetchSports local success: ${remote.length} records');
+      return remote;
+    }
+
     final cached = await _readCache(
       _getCacheKey(_sportsCacheKey),
       forceRefresh: forceRefresh,

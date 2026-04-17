@@ -1142,3 +1142,74 @@ class _ParsedLeg {
   final String label;
   final Decimal odds;
 }
+
+class LocalDataSourceConfig {
+  const LocalDataSourceConfig({
+    required this.isLocalMode,
+    required this.oddsPath,
+    required this.sportsPath,
+  });
+
+  final bool isLocalMode;
+  final String oddsPath;
+  final String sportsPath;
+
+  LocalDataSourceConfig copyWith({
+    bool? isLocalMode,
+    String? oddsPath,
+    String? sportsPath,
+  }) {
+    return LocalDataSourceConfig(
+      isLocalMode: isLocalMode ?? this.isLocalMode,
+      oddsPath: oddsPath ?? this.oddsPath,
+      sportsPath: sportsPath ?? this.sportsPath,
+    );
+  }
+}
+
+final localDataSourceConfigProvider =
+    AsyncNotifierProvider<LocalDataSourceConfigNotifier, LocalDataSourceConfig>(
+      LocalDataSourceConfigNotifier.new,
+    );
+
+class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig> {
+  static const String _isLocalModeKey = 'datasource_is_local_mode';
+  static const String _oddsPathKey = 'datasource_odds_path';
+  static const String _sportsPathKey = 'datasource_sports_path';
+
+  @override
+  Future<LocalDataSourceConfig> build() async {
+    final preferences = await SharedPreferences.getInstance();
+    final isLocalMode = preferences.getBool(_isLocalModeKey) ?? false;
+    final oddsPath = preferences.getString(_oddsPathKey) ?? '';
+    final sportsPath = preferences.getString(_sportsPathKey) ?? '';
+
+    // Sync to AppConfig on load
+    AppConfig.isLocalMode = isLocalMode;
+    AppConfig.localOddsPath = oddsPath;
+    AppConfig.localSportsPath = sportsPath;
+
+    return LocalDataSourceConfig(
+      isLocalMode: isLocalMode,
+      oddsPath: oddsPath,
+      sportsPath: sportsPath,
+    );
+  }
+
+  Future<void> updateConfig(LocalDataSourceConfig config) async {
+    state = AsyncData(config);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_isLocalModeKey, config.isLocalMode);
+    await preferences.setString(_oddsPathKey, config.oddsPath);
+    await preferences.setString(_sportsPathKey, config.sportsPath);
+
+    // Update AppConfig synchronously before invalidating
+    AppConfig.isLocalMode = config.isLocalMode;
+    AppConfig.localOddsPath = config.oddsPath;
+    AppConfig.localSportsPath = config.sportsPath;
+
+    // Invalidate dependent providers to trigger instant UI refresh
+    ref.invalidate(rawOddsProvider);
+    ref.invalidate(availableSportsByKeyProvider);
+  }
+}
