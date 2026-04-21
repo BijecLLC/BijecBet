@@ -20,6 +20,10 @@ import '../src/rust/risk.dart';
 final oddsApiServiceProvider = Provider<OddsApiService>((ref) {
   final oddsApiKey = ref.watch(oddsApiKeyProvider).asData?.value;
   final user = ref.watch(authStateChangesProvider).asData?.value;
+
+  // Watch local config to ensure service rebuilds when toggle/paths change (Requirement 6.4)
+  ref.watch(localDataSourceConfigProvider);
+
   return OddsApiService(apiKeyOverride: oddsApiKey, uid: user?.uid);
 });
 
@@ -1197,19 +1201,19 @@ class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig>
   }
 
   Future<void> updateConfig(LocalDataSourceConfig config) async {
-    state = AsyncData(config);
+    // Update AppConfig synchronously BEFORE notifying listeners.
+    // This ensures that when oddsApiServiceProvider rebuilds (triggered by the state change),
+    // it sees the correct local/live mode immediately.
+    AppConfig.isLocalMode = config.isLocalMode;
+    AppConfig.localOddsPath = config.oddsPath;
+    AppConfig.localSportsPath = config.sportsPath;
+
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_isLocalModeKey, config.isLocalMode);
     await preferences.setString(_oddsPathKey, config.oddsPath);
     await preferences.setString(_sportsPathKey, config.sportsPath);
 
-    // Update AppConfig synchronously before invalidating
-    AppConfig.isLocalMode = config.isLocalMode;
-    AppConfig.localOddsPath = config.oddsPath;
-    AppConfig.localSportsPath = config.sportsPath;
-
-    // Invalidate dependent providers to trigger instant UI refresh
-    ref.invalidate(rawOddsProvider);
-    ref.invalidate(availableSportsByKeyProvider);
+    // Update state last to trigger reactive UI/provider updates.
+    state = AsyncData(config);
   }
 }

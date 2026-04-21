@@ -49,6 +49,9 @@ class _AppRoot extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize local config from storage on startup (Requirement 6.4)
+    ref.watch(localDataSourceConfigProvider);
+
     final selectedThemeAsync = ref.watch(appThemeSelectionProvider);
     final selectedTheme = selectedThemeAsync.asData?.value ?? AppThemeId.quant;
     final themeData = AppThemeRegistry.resolve(selectedTheme);
