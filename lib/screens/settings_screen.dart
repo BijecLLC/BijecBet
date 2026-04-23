@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -289,33 +290,44 @@ enum _DataSource { live, local }
 class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   final TextEditingController _oddsApiKeyController = TextEditingController();
   final TextEditingController _localOddsPathController = TextEditingController();
-  final TextEditingController _localSportsCatalogPathController = TextEditingController();
+  final TextEditingController _localSportsCatalogPathController =
+      TextEditingController();
+
   bool _obscureOddsApiKey = true;
   bool _isSaving = false;
   String? _remainingRequests;
+
+  // UI state for the radio/toggle selection (unapplied)
   _DataSource _selectedDataSource = _DataSource.live;
+
+  // Track if user has touched the fields to avoid overwriting their typing
+  bool _hasEditedOddsPath = false;
+  bool _hasEditedSportsPath = false;
 
   @override
   void initState() {
     super.initState();
     _loadSavedOddsApiKey();
-    _loadLocalConfig();
+    _localOddsPathController.addListener(() => _hasEditedOddsPath = true);
+    _localSportsCatalogPathController.addListener(
+      () => _hasEditedSportsPath = true,
+    );
+
+    // Initial load from provider state if available
+    final config = ref.read(localDataSourceConfigProvider).value;
+    if (config != null) {
+      _applyConfigToControllers(config);
+    }
   }
 
-  void _loadLocalConfig() {
-    final configAsync = ref.read(localDataSourceConfigProvider);
-    if (configAsync.hasValue) {
-      final config = configAsync.value!;
-      _selectedDataSource =
-          config.isLocalMode ? _DataSource.local : _DataSource.live;
+  void _applyConfigToControllers(LocalDataSourceConfig config) {
+    _selectedDataSource =
+        config.isLocalMode ? _DataSource.local : _DataSource.live;
+    if (!_hasEditedOddsPath) {
       _localOddsPathController.text = config.oddsPath;
+    }
+    if (!_hasEditedSportsPath) {
       _localSportsCatalogPathController.text = config.sportsPath;
-    } else {
-      // Fallback to AppConfig if provider is still loading
-      _selectedDataSource =
-          AppConfig.isLocalMode ? _DataSource.local : _DataSource.live;
-      _localOddsPathController.text = AppConfig.localOddsPath;
-      _localSportsCatalogPathController.text = AppConfig.localSportsPath;
     }
   }
 
@@ -488,6 +500,10 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
     await ref.read(localDataSourceConfigProvider.notifier).updateConfig(config);
 
     if (mounted) {
+      setState(() {
+        _hasEditedOddsPath = false;
+        _hasEditedSportsPath = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Local configuration applied successfully.'),
@@ -498,6 +514,20 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
 
   @override
   Widget build(BuildContext context) {
+    // Reactive Loading (Requirement 6.4): Watch provider and update un-edited fields
+    ref.listen(localDataSourceConfigProvider, (prev, next) {
+      if (next.hasValue) {
+        _applyConfigToControllers(next.value!);
+        setState(() {});
+      }
+    });
+
+    final persistedConfig = ref.watch(localDataSourceConfigProvider).value;
+    final persistedSource =
+        persistedConfig?.isLocalMode == true
+            ? _DataSource.local
+            : _DataSource.live;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -510,11 +540,23 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Live Odds API', style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      'Live Odds API',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     if (_selectedDataSource == _DataSource.live)
                       Chip(
-                        label: const Text('Active Source'),
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        label: Text(
+                          persistedSource == _DataSource.live
+                              ? 'Active Source'
+                              : 'Selected (Pending)',
+                        ),
+                        backgroundColor:
+                            persistedSource == _DataSource.live
+                                ? Theme.of(context).colorScheme.primaryContainer
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.secondaryContainer,
                         side: BorderSide.none,
                       )
                     else
@@ -593,6 +635,7 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
         ),
         const SizedBox(height: 16),
         _DataSourceConfigCard(
+          persistedSource: persistedSource,
           selectedSource: _selectedDataSource,
           onSourceChanged: (source) {
             setState(() {
@@ -610,6 +653,7 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
 
 class _DataSourceConfigCard extends StatelessWidget {
   const _DataSourceConfigCard({
+    required this.persistedSource,
     required this.selectedSource,
     required this.onSourceChanged,
     required this.oddsPathController,
@@ -617,6 +661,7 @@ class _DataSourceConfigCard extends StatelessWidget {
     required this.onApplyConfig,
   });
 
+  final _DataSource persistedSource;
   final _DataSource selectedSource;
   final ValueChanged<_DataSource> onSourceChanged;
   final TextEditingController oddsPathController;
@@ -628,50 +673,83 @@ class _DataSourceConfigCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Local Files',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                if (selectedSource == _DataSource.local)
-                  Chip(
-                    label: const Text('Active Source'),
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    side: BorderSide.none,
-                  )
-                else
-                  OutlinedButton(
-                    onPressed: () => onSourceChanged(_DataSource.local),
-                    child: const Text('Activate'),
+        child: Opacity(
+          opacity: kIsWeb ? 0.5 : 1.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Local Files',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Application will pull from these local machine files instead of hitting the live network.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: oddsPathController,
-              decoration: const InputDecoration(
-                labelText: 'Odds Data Path',
-                hintText: 'e.g. /path/to/odds.json',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description_outlined),
+                  if (kIsWeb)
+                    const Text(
+                      'Unsupported on Web',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    )
+                  else if (selectedSource == _DataSource.local)
+                    Chip(
+                      label: Text(
+                        persistedSource == _DataSource.local
+                            ? 'Active Source'
+                            : 'Selected (Pending)',
+                      ),
+                      backgroundColor:
+                          persistedSource == _DataSource.local
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.secondaryContainer,
+                      side: BorderSide.none,
+                    )
+                  else
+                    OutlinedButton(
+                      onPressed: () => onSourceChanged(_DataSource.local),
+                      child: const Text('Activate'),
+                    ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            const ExpansionTile(
-              title: Text('Required Odds JSON Format', style: TextStyle(fontSize: 14)),
-              tilePadding: EdgeInsets.zero,
-              children: [
-                SelectableText(
-                  '''[
+              const SizedBox(height: 12),
+              const Text(
+                'Application will pull from these local machine files instead of hitting the live network.',
+              ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Local file system access is restricted on Web for security. Please use the Live Odds API or run the app on Desktop to enable this mode.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              IgnorePointer(
+                ignoring: kIsWeb,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: oddsPathController,
+                      enabled: !kIsWeb,
+                      decoration: const InputDecoration(
+                        labelText: 'Odds Data Path',
+                        hintText: 'e.g. /path/to/odds.json',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.description_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const ExpansionTile(
+                      title: Text(
+                        'Required Odds JSON Format',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      tilePadding: EdgeInsets.zero,
+                      children: [
+                        SelectableText(
+                          '''[
   {
       "id": "unique_event_id_string",
       "sport_key": "sport_key_matching_catalog",
@@ -698,27 +776,34 @@ class _DataSourceConfigCard extends StatelessWidget {
       ]
   }
 ]''',
-                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: catalogPathController,
-              decoration: const InputDecoration(
-                labelText: 'Sports Catalog Path',
-                hintText: 'e.g. /path/to/sports.json',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.list_alt_outlined),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const ExpansionTile(
-              title: Text('Required Sports Catalog JSON Format', style: TextStyle(fontSize: 14)),
-              tilePadding: EdgeInsets.zero,
-              children: [
-                SelectableText(
-                  '''[
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: catalogPathController,
+                      enabled: !kIsWeb,
+                      decoration: const InputDecoration(
+                        labelText: 'Sports Catalog Path',
+                        hintText: 'e.g. /path/to/sports.json',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.list_alt_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const ExpansionTile(
+                      title: Text(
+                        'Required Sports Catalog JSON Format',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      tilePadding: EdgeInsets.zero,
+                      children: [
+                        SelectableText(
+                          '''[
   {
       "key": "americanfootball_ncaaf",
       "group": "American Football",
@@ -736,20 +821,27 @@ class _DataSourceConfigCard extends StatelessWidget {
       "has_outrights": false
   }
 ]''',
-                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton.icon(
+                        onPressed: kIsWeb ? null : onApplyConfig,
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: const Text('Apply Local Config'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                onPressed: onApplyConfig,
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Apply Local Config'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
