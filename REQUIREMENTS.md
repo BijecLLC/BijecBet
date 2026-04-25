@@ -575,3 +575,88 @@ This section should be dated and also numbered for prioty (number removed once c
 - If there are 3 outcomes, it should show 3 rows (Home, Draw, Away) with their respective stakes and bookmakers.
 
 - Ensure the 'Total Profit' calculation updates in real-time as the user types the investment amount.
+
+
+
+
+### Phase 6: Local File Parsing & Mocking (Version 0.8.0)
+
+*Goal: Implement a robust "Local File" architecture to allow the application to run completely offline. This ensures UI/UX development, engine testing, and debugging can continue without burning through external Odds API tokens, seamlessly parsing local machine data as if it were a live network response.*
+
+- [x] __Step 6.1: Settings UI (Data Source Config)__
+    - **UI Integration**: Add a new "Data Source Configuration" section directly beneath the Odds API card within the existing **API Keys** tab (`_ApiKeysSettingsTab`) in `SettingsScreen`.
+    - **Path Inputs**: Create two `TextField` inputs (or utilize a file picker integration) for the user to specify local machine file paths:
+        - `Odds Data Path`: The absolute path to the JSON file containing raw betting lines.
+        - `Sports Catalog Path`: The absolute path to the JSON file detailing active sports and books.
+    - **The Data Toggle**: Implement a master `SegmentedButton` that acts as the source-of-truth toggle, allowing the user to switch the app's data source between "Live Odds API" and "Local Files."
+
+- [x] __Step 6.2: Local Betting Data Integration & Explainer__
+    - **Logic Refactor**: Modify the `OddsApiService` (injected via `oddsApiServiceProvider`) so that when the "Local File" mode is active, `fetchOdds` and `watchOdds` (which feeds `rawOddsProvider`) read from the provided local JSON path using `dart:io`.
+    - **Parsing**: The data must be deserialized using the exact same standard Odds API models, allowing the rest of the application (including the Rust risk engine) to function without knowing the data is mocked.
+    - **UI Explainer**: Beneath the `Odds Data Path` input field, add an `ExpansionTile` or an "Info" icon that opens a modal. This must show the user the strict JSON schema required for the file parser to work correctly:
+        > **Required Odds JSON Format:**
+        > ```json
+        > [
+        >     {
+        >         "id": "bda33adca828c09dc3cac3a856aef176",
+        >         "sport_key": "americanfootball_nfl",
+        >         "commence_time": "2021-09-10T00:20:00Z",
+        >         "home_team": "Tampa Bay Buccaneers",
+        >         "away_team": "Dallas Cowboys",
+        >         "bookmakers": [
+        >             {
+        >                 "key": "unibet",
+        >                 "title": "Unibet",
+        >                 "last_update": "2021-06-10T13:33:18Z",
+        >                 "markets": [
+        >                     {
+        >                         "key": "h2h",
+        >                         "outcomes": [
+        >                             { "name": "Dallas Cowboys", "price": 240 },
+        >                             { "name": "Tampa Bay Buccaneers", "price": -303 }
+        >                         ]
+        >                     },
+        >                     {
+        >                         "key": "spreads",
+        >                         "outcomes": [
+        >                             { "name": "Dallas Cowboys", "price": -109, "point": 6.5 },
+        >                             { "name": "Tampa Bay Buccaneers", "price": -111, "point": -6.5 }
+        >                         ]
+        >                     }
+        >                 ]
+        >             }
+        >         ]
+        >     }
+        > ]
+        > ```
+
+- [x] __Step 6.3: Local Sports Catalog Integration & Explainer__
+    - **Logic Refactor**: Mirror the logic from 6.1.2 for `fetchSports`. Any query for `availableSportsByKeyProvider` or `availableBookmakersByKeyProvider` must read from the provided local sports catalog path when the "Local File" mode is active.
+    - **UI Explainer**: Add a corresponding `ExpansionTile` or modal beneath the `Sports Catalog Path` input showing the required array format:
+        > **Required Sports Catalog JSON Format:**
+        > ```json
+        > [
+        >     {
+        >         "key": "americanfootball_ncaaf",
+        >         "group": "American Football",
+        >         "title": "NCAAF",
+        >         "description": "US College Football",
+        >         "active": true,
+        >         "has_outrights": false
+        >     },
+        >     {
+        >         "key": "americanfootball_nfl",
+        >         "group": "American Football",
+        >         "title": "NFL",
+        >         "description": "US Football",
+        >         "active": true,
+        >         "has_outrights": false
+        >     }
+        > ]
+        > ```
+
+- [x] __Step 6.4: Local Persistence & Reactivity__
+    - **The Action**: Add an "Apply Local Config" save button at the bottom of the configuration section.
+    - **Hardware-Only Storage**: Persist the chosen file paths and the data source mode strictly to `SharedPreferences`.
+    - **Cloud Blacklist**: Explicitly DO NOT sync these local machine paths to the user's Firestore document. Paths like `/Users/jack/Desktop/odds.json` are unique to the hardware and non-portable.
+    - **Reactivity**: Ensure saving updates `AppConfig` immediately and invalidates the `rawOddsProvider` and `availableSportsByKeyProvider` to trigger an instant UI refresh with the newly selected local data.

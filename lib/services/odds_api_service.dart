@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:rational/rational.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,7 +25,7 @@ class OddsApiService {
   OddsApiService({
     SharedPreferences? preferences,
     this.cacheTtl = const Duration(minutes: 5),
-    this.refreshInterval = const Duration(minutes: 5),
+    this.refreshInterval = const Duration(seconds: 1),
     this.apiKeyOverride,
     this.uid,
     http.Client? client,
@@ -45,12 +46,53 @@ class OddsApiService {
     return '${baseKey}_$uid';
   }
 
-  void _log(String message) {}
+  void _log(String message) {
+    final timestamp = DateTime.now().toIso8601String();
+    print('[$timestamp] $message');
+  }
 
   Future<List<Map<String, dynamic>>> fetchSports({
     bool forceRefresh = false,
   }) async {
     _log('fetchSports(forceRefresh: $forceRefresh) start');
+    _log('AppConfig.isLocalMode: ${AppConfig.isLocalMode}');
+    
+    
+
+    if (AppConfig.isLocalMode) {
+      if (kIsWeb) {
+        throw const OddsApiServiceException(
+          'Local file mode is not supported on Web. Please use Live Odds API or run on Desktop.',
+        );
+      }
+
+      final path = AppConfig.localSportsPath.trim();
+      if (path.isEmpty) {
+        _log('fetchSports aborted: local path is empty');
+        throw const OddsApiServiceException(
+          'Local sports path is empty. Please configure it in Settings.',
+        );
+      }
+
+      _log('fetchSports reading from local file: $path');
+      try {
+        final file = File(path);
+        if (!await file.exists()) {
+          throw OddsApiServiceException('Local sports file not found at $path');
+        }
+        final contents = await file.readAsString();
+        final decoded = jsonDecode(contents) as List<dynamic>;
+        final remote = decoded
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+        _log('fetchSports local success: ${remote.length} records');
+        return remote;
+      } catch (e) {
+        _log('fetchSports local error: $e');
+        throw OddsApiServiceException('Failed to read local sports file: $e');
+      }
+    }
+
     final cached = await _readCache(
       _getCacheKey(_sportsCacheKey),
       forceRefresh: forceRefresh,
@@ -84,6 +126,45 @@ class OddsApiService {
     _log(
       'fetchOdds(sportKey: ${sportKey ?? 'all'}, forceRefresh: $forceRefresh) start',
     );
+
+    if (AppConfig.isLocalMode) {
+      if (kIsWeb) {
+        throw const OddsApiServiceException(
+          'Local file mode is not supported on Web. Please use Live Odds API or run on Desktop.',
+        );
+      }
+
+      final path = AppConfig.localOddsPath.trim();
+      if (path.isEmpty) {
+        _log('fetchOdds aborted: local path is empty');
+        throw const OddsApiServiceException(
+          'Local odds path is empty. Please configure it in Settings.',
+        );
+      }
+
+      _log('fetchOdds reading from local file: $path');
+      try {
+        final file = File(path);
+        if (!await file.exists()) {
+          throw OddsApiServiceException('Local odds file not found at $path');
+        }
+        final contents = await file.readAsString();
+        final decoded = jsonDecode(contents) as List<dynamic>;
+        final remote = decoded
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+        final normalizedRemote = _normalizeOddsPayload(remote);
+        final filtered = _filterOddsBySport(normalizedRemote, sportKey);
+        _log(
+          'fetchOdds local success: ${filtered.length} events after filtering',
+        );
+        return filtered;
+      } catch (e) {
+        _log('fetchOdds local error: $e');
+        throw OddsApiServiceException('Failed to read local odds file: $e');
+      }
+    }
+
     final cached = await _readCache(
       _getCacheKey(_oddsCacheKey),
       forceRefresh: forceRefresh,

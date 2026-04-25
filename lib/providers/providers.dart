@@ -20,6 +20,10 @@ import '../src/rust/risk.dart';
 final oddsApiServiceProvider = Provider<OddsApiService>((ref) {
   final oddsApiKey = ref.watch(oddsApiKeyProvider).asData?.value;
   final user = ref.watch(authStateChangesProvider).asData?.value;
+
+  // Watch local config to ensure service rebuilds when toggle/paths change (Requirement 6.4)
+  ref.watch(localDataSourceConfigProvider);
+
   return OddsApiService(apiKeyOverride: oddsApiKey, uid: user?.uid);
 });
 
@@ -1141,4 +1145,75 @@ class _ParsedLeg {
 
   final String label;
   final Decimal odds;
+}
+
+class LocalDataSourceConfig {
+  const LocalDataSourceConfig({
+    required this.isLocalMode,
+    required this.oddsPath,
+    required this.sportsPath,
+  });
+
+  final bool isLocalMode;
+  final String oddsPath;
+  final String sportsPath;
+
+  LocalDataSourceConfig copyWith({
+    bool? isLocalMode,
+    String? oddsPath,
+    String? sportsPath,
+  }) {
+    return LocalDataSourceConfig(
+      isLocalMode: isLocalMode ?? this.isLocalMode,
+      oddsPath: oddsPath ?? this.oddsPath,
+      sportsPath: sportsPath ?? this.sportsPath,
+    );
+  }
+}
+
+final localDataSourceConfigProvider =
+    AsyncNotifierProvider<LocalDataSourceConfigNotifier, LocalDataSourceConfig>(
+      LocalDataSourceConfigNotifier.new,
+    );
+
+class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig> {
+  static const String _isLocalModeKey = 'datasource_is_local_mode';
+  static const String _oddsPathKey = 'datasource_odds_path';
+  static const String _sportsPathKey = 'datasource_sports_path';
+
+  @override
+  Future<LocalDataSourceConfig> build() async {
+    final preferences = await SharedPreferences.getInstance();
+    final isLocalMode = preferences.getBool(_isLocalModeKey) ?? false;
+    final oddsPath = preferences.getString(_oddsPathKey) ?? '';
+    final sportsPath = preferences.getString(_sportsPathKey) ?? '';
+
+    // Sync to AppConfig on load
+    AppConfig.isLocalMode = isLocalMode;
+    AppConfig.localOddsPath = oddsPath;
+    AppConfig.localSportsPath = sportsPath;
+
+    return LocalDataSourceConfig(
+      isLocalMode: isLocalMode,
+      oddsPath: oddsPath,
+      sportsPath: sportsPath,
+    );
+  }
+
+  Future<void> updateConfig(LocalDataSourceConfig config) async {
+    // Update AppConfig synchronously BEFORE notifying listeners.
+    // This ensures that when oddsApiServiceProvider rebuilds (triggered by the state change),
+    // it sees the correct local/live mode immediately.
+    AppConfig.isLocalMode = config.isLocalMode;
+    AppConfig.localOddsPath = config.oddsPath;
+    AppConfig.localSportsPath = config.sportsPath;
+
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_isLocalModeKey, config.isLocalMode);
+    await preferences.setString(_oddsPathKey, config.oddsPath);
+    await preferences.setString(_sportsPathKey, config.sportsPath);
+
+    // Update state last to trigger reactive UI/provider updates.
+    state = AsyncData(config);
+  }
 }
