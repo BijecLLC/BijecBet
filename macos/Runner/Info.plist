@@ -37,9 +37,21 @@
             <array>
                 <string>com.googleusercontent.apps.188999838435-1k986bcjsbe4407u4ojvv3l6c307otrd</string>
             </array>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
         </dict>
     </array>
     <key>GIDClientID</key>
     <string>188999838435-1k986bcjsbe4407u4ojvv3l6c307otrd.apps.googleusercontent.com</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
 </dict>
 </plist>
