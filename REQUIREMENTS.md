@@ -660,3 +660,137 @@ This section should be dated and also numbered for prioty (number removed once c
     - **Hardware-Only Storage**: Persist the chosen file paths and the data source mode strictly to `SharedPreferences`.
     - **Cloud Blacklist**: Explicitly DO NOT sync these local machine paths to the user's Firestore document. Paths like `/Users/jack/Desktop/odds.json` are unique to the hardware and non-portable.
     - **Reactivity**: Ensure saving updates `AppConfig` immediately and invalidates the `rawOddsProvider` and `availableSportsByKeyProvider` to trigger an instant UI refresh with the newly selected local data.
+
+### Phase 7: BijecCache (Version 0.9.0)
+
+**Goal**: Implement a specialized, zero-config data source mode that fetches live odds from a dedicated VPS and reads the sports catalog from a bundled asset. Optimized for macOS, Windows, and Web.
+
+== HARD RULES (non-negotiable) ==
+1. The odds API URL MUST live in exactly ONE place in the codebase, behind a
+   single constant or config value. Anywhere it's needed, code reads from
+   that one source. Never hardcode the URL inline.
+
+   Preferred pattern:
+       const ODDS_URL = String.fromEnvironment(
+         'ODDS_URL',
+         defaultValue: 'http://178.128.146.218/odds.json',
+       );
+   Or: read from Firebase Remote Config with the dart-define as fallback.
+
+2. If you ever see an HTTP URL hardcoded outside that one constant, FIX IT
+   and tell me. No exceptions.
+
+3. Do NOT add NSAllowsArbitraryLoads to Info.plist or
+   cleartextTrafficPermitted=true to the Android manifest without me
+   explicitly asking. If iOS support comes up, flag it and stop — we
+   migrate to HTTPS first.
+
+== ⚠️  MIGRATION REMINDER (read this every time) ==
+This setup is TEMPORARY. Before any of the following, I MUST migrate to
+HTTPS with a real domain + Let's Encrypt cert + Cloudflare in front:
+
+  - Submitting to TestFlight, App Store, or Google Play
+  - Letting any iOS user test the app
+  - Sharing the build outside the immediate beta circle
+  - Posting the app anywhere public (Reddit, Discord servers beyond friends,
+    social media)
+
+The migration is ~30 minutes of work:
+  1. Buy a domain (~$10/yr — Cloudflare Registrar / Porkbun)
+  2. Point A record at the droplet
+  3. Update nginx server_name, run `sudo certbot --nginx -d odds.mydomain.com`
+  4. Add Cloudflare proxy in front (hides droplet IP, free DDoS protection)
+  5. Add nginx rate limiting (30r/m per IP) and an X-App-Key header check
+  6. Flip ODDS_URL via Firebase Remote Config or rebuild with new dart-define
+
+If I ask you to do something from the list above WITHOUT having migrated
+yet, REMIND ME of this section before proceeding.
+
+== TASK ==
+
+Refactor the data source layer of the Flutter app so that:
+
+  - Sports odds are fetched LIVE from the self-hosted endpoint defined by
+    the ODDS_URL constant (see HARD RULES and MIGRATION REMINDER above —
+    the URL must live in exactly one place).
+  - The sports catalog (active sports, leagues, has_outrights flags) is
+    read from a local sports.json file bundled with the app at
+    assets/sports.json.
+
+Both sources are always in use simultaneously: odds live, catalog local.
+No toggle, no user-selectable mode, no path inputs — the catalog file is
+shipped with the app and not user-configurable.
+
+== SCOPE ==
+
+1. OddsApiService refactor (find the existing service, don't recreate it).
+
+   - fetchOdds() and watchOdds() (feeding rawOddsProvider): point at
+     ODDS_URL via http.get. Parse with the existing standard Odds API v4
+     models — the Python scraper emits the exact shape that
+     the-odds-api.com /odds returns, so no model changes needed.
+   - fetchSports() (feeding availableSportsByKeyProvider and
+     availableBookmakersByKeyProvider): read assets/sports.json via
+     rootBundle.loadString(...) and jsonDecode.
+   - Method signatures and return types stay identical. Downstream code
+     (Rust risk engine, providers) must not need to know where data came
+     from.
+
+2. Bundle the sports catalog.
+
+   - use the current sports.json provided for sports (it is in assets) 
+
+3. New Settings UI section.
+
+   - In _ApiKeysSettingsTab (in SettingsScreen),
+    add a new section
+     IMMEDIATELY BELOW the existing Odds API card and the section that
+     currently follows it — it goes third, in that order.
+   - The section is minimal: a header, a one-line description ("Use live
+     odds from the self-hosted endpoint and load the sports catalog from
+     the bundled file."), and a single "Activate" button.
+   - Tapping Activate:
+       a. Switches the app to this data source mode by writing the active
+          mode to AppConfig and persisting to SharedPreferences (NOT
+          Firestore — keep the no-cloud-sync rule from the earlier spec).
+       b. Invalidates rawOddsProvider, availableSportsByKeyProvider, and
+          availableBookmakersByKeyProvider so the UI refreshes immediately.
+       c. Shows a SnackBar confirming activation, or an error SnackBar
+          with a specific reason if the endpoint or asset can't be loaded.
+
+4. Cleanup.
+
+   - Any branching in OddsApiService that switches data sources based on
+     a previous mode flag stays — this Activate button is just another
+     mode it can be set to. Don't remove existing modes; add this one.
+   - If you find a hardcoded URL during the refactor that isn't the
+     ODDS_URL constant, fix it (per HARD RULES) and tell me where it was.
+
+== CONSTRAINTS ==
+
+- Don't change the JSON schemas the Rust engine consumes.
+- Don't add a network fallback for the sports catalog. If
+  assets/sports.json fails to load, fail loudly with a clear error.
+- Don't add UI for editing the sports.json path or contents — it's
+  bundled, not user-configurable.
+- All HARD RULES above apply. ODDS_URL is the only place the endpoint
+  string appears.
+
+== DELIVERABLES ==
+
+- Updated OddsApiService with the live-odds + bundled-catalog behavior.
+- New "Activate" section in _ApiKeysSettingsTab, positioned third.
+- assets/sports.json file and pubspec.yaml registration.
+- Updated AppConfig + SharedPreferences key for this new mode.
+- A short summary in chat of files touched and any hardcoded-URL
+  violations you fixed.
+- **Cross-Platform Verification Suite**:
+    - **macOS**: 
+        - Verify `NSAllowsArbitraryLoads` is set to `true` in `macos/Runner/Info.plist`.
+        - Verify `com.apple.security.network.client` is set to `true` in `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`.
+        - Test: Run `flutter run -d macos` and confirm odds load in "BijecCache" mode.
+    - **Web**:
+        - Test: Run `flutter run -d chrome` and confirm odds load (Ensure droplet has CORS enabled).
+    - **Windows**:
+        - Verify `internetClient` is present in `msix_config` (pubspec.yaml).
+        - Test: Run `flutter run -d windows` and confirm odds load.
