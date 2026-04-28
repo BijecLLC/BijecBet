@@ -1150,21 +1150,25 @@ class _ParsedLeg {
 class LocalDataSourceConfig {
   const LocalDataSourceConfig({
     required this.isLocalMode,
+    required this.isBijecCacheMode,
     required this.oddsPath,
     required this.sportsPath,
   });
 
   final bool isLocalMode;
+  final bool isBijecCacheMode;
   final String oddsPath;
   final String sportsPath;
 
   LocalDataSourceConfig copyWith({
     bool? isLocalMode,
+    bool? isBijecCacheMode,
     String? oddsPath,
     String? sportsPath,
   }) {
     return LocalDataSourceConfig(
       isLocalMode: isLocalMode ?? this.isLocalMode,
+      isBijecCacheMode: isBijecCacheMode ?? this.isBijecCacheMode,
       oddsPath: oddsPath ?? this.oddsPath,
       sportsPath: sportsPath ?? this.sportsPath,
     );
@@ -1178,6 +1182,7 @@ final localDataSourceConfigProvider =
 
 class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig> {
   static const String _isLocalModeKey = 'datasource_is_local_mode';
+  static const String _isBijecCacheModeKey = 'datasource_is_bijec_cache_mode';
   static const String _oddsPathKey = 'datasource_odds_path';
   static const String _sportsPathKey = 'datasource_sports_path';
 
@@ -1185,16 +1190,19 @@ class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig>
   Future<LocalDataSourceConfig> build() async {
     final preferences = await SharedPreferences.getInstance();
     final isLocalMode = preferences.getBool(_isLocalModeKey) ?? false;
+    final isBijecCacheMode = preferences.getBool(_isBijecCacheModeKey) ?? false;
     final oddsPath = preferences.getString(_oddsPathKey) ?? '';
     final sportsPath = preferences.getString(_sportsPathKey) ?? '';
 
     // Sync to AppConfig on load
     AppConfig.isLocalMode = isLocalMode;
+    AppConfig.isBijecCacheMode = isBijecCacheMode;
     AppConfig.localOddsPath = oddsPath;
     AppConfig.localSportsPath = sportsPath;
 
     return LocalDataSourceConfig(
       isLocalMode: isLocalMode,
+      isBijecCacheMode: isBijecCacheMode,
       oddsPath: oddsPath,
       sportsPath: sportsPath,
     );
@@ -1205,11 +1213,13 @@ class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig>
     // This ensures that when oddsApiServiceProvider rebuilds (triggered by the state change),
     // it sees the correct local/live mode immediately.
     AppConfig.isLocalMode = config.isLocalMode;
+    AppConfig.isBijecCacheMode = config.isBijecCacheMode;
     AppConfig.localOddsPath = config.oddsPath;
     AppConfig.localSportsPath = config.sportsPath;
 
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_isLocalModeKey, config.isLocalMode);
+    await preferences.setBool(_isBijecCacheModeKey, config.isBijecCacheMode);
     await preferences.setString(_oddsPathKey, config.oddsPath);
     await preferences.setString(_sportsPathKey, config.sportsPath);
 
