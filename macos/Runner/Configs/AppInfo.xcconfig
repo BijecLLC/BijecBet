@@ -11,7 +11,7 @@ PRODUCT_NAME = BijecBet
 PRODUCT_BUNDLE_IDENTIFIER = com.bijec.bijecbet
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.bijec. All rights reserved.
 
 // Rust static/dynamic library search paths for FRB linkage.
 LIBRARY_SEARCH_PATHS = $(inherited) $(PROJECT_DIR)/../rust/target/release $(PROJECT_DIR)/../rust/target/aarch64-apple-darwin/release $(PROJECT_DIR)/../rust/target/x86_64-apple-darwin/release
