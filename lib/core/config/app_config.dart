@@ -4,7 +4,13 @@ class AppConfig {
   static final RegExp _oddsApiKeyPattern = RegExp(r'^[A-Za-z0-9]{32}$');
   static String? _userProvidedOddsApiKey;
 
+  static const String oddsUrl = String.fromEnvironment(
+    'ODDS_URL',
+    defaultValue: 'http://178.128.146.218/odds.json',
+  );
+
   static bool isLocalMode = false;
+  static bool isBijecCacheMode = false;
   static String localOddsPath = '';
   static String localSportsPath = '';
 
