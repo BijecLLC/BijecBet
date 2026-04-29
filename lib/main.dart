@@ -65,7 +65,7 @@ class _AppRoot extends ConsumerWidget {
       routes: {
         //Routes for the main pages
         LoginScreen.routeName: (_) => const LoginScreen(), //Login Screen
-        SignUpScreen.routeName: (_) => const SignUpScreen(), // Signup Screen
+       // SignUpScreen.routeName: (_) => const SignUpScreen(), // Signup Screen
         UsernameScreen.routeName: (_) => const UsernameScreen(),
         SettingsScreen.routeName: (_) => const SettingsScreen(),
         CalculatorScreen.routeName: (_) => const CalculatorScreen(),

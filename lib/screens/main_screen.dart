@@ -38,6 +38,7 @@ class MainScreen extends StatelessWidget {
                     },
                     child: const Text('Login'),
                   ),
+                  /*
                   const SizedBox(height: 12),
                   OutlinedButton( // Different type of button that once again just  changes pages 
                     onPressed: () {
@@ -45,6 +46,7 @@ class MainScreen extends StatelessWidget {
                     },
                     child: const Text('Sign Up'),
                   ),
+                  */
                 ],
               ),
             ),

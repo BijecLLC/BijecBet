@@ -230,10 +230,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
+
                     OutlinedButton.icon(
-                      onPressed: _isSubmitting ? null : _signInWithGoogle,
+                      onPressed: () => {},
                       icon: const Icon(Icons.login),
-                      label: const Text('Login with Google'),
+                      label: const Text('Google Sign in Ommitted for Beta'),
                     ),
                   ],
                 ),
