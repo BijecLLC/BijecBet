@@ -285,7 +285,7 @@ class _ApiKeysSettingsTab extends ConsumerStatefulWidget {
       _ApiKeysSettingsTabState();
 }
 
-enum _DataSource { live, local }
+enum _DataSource { live, local, bijecCache }
 
 class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   final TextEditingController _oddsApiKeyController = TextEditingController();
@@ -321,8 +321,14 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
   }
 
   void _applyConfigToControllers(LocalDataSourceConfig config) {
-    _selectedDataSource =
-        config.isLocalMode ? _DataSource.local : _DataSource.live;
+    if (config.isBijecCacheMode) {
+      _selectedDataSource = _DataSource.bijecCache;
+    } else if (config.isLocalMode) {
+      _selectedDataSource = _DataSource.local;
+    } else {
+      _selectedDataSource = _DataSource.live;
+    }
+
     if (!_hasEditedOddsPath) {
       _localOddsPathController.text = config.oddsPath;
     }
@@ -410,6 +416,20 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
         _remainingRequests = handshake.remainingRequests;
       });
       await ref.read(oddsApiKeyProvider.notifier).setKey(normalizedKey);
+      
+      // Force immediate switch to live mode when a new key is successfully updated
+      final currentConfig = ref.read(localDataSourceConfigProvider).value;
+      if (currentConfig != null) {
+        await ref
+            .read(localDataSourceConfigProvider.notifier)
+            .updateConfig(
+              currentConfig.copyWith(
+                isLocalMode: false,
+                isBijecCacheMode: false,
+              ),
+            );
+      }
+
       if (!mounted) {
         return;
       }
@@ -492,7 +512,8 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
     final sportsPath = _localSportsCatalogPathController.text.trim();
 
     final config = LocalDataSourceConfig(
-      isLocalMode: _selectedDataSource == _DataSource.local,
+      isLocalMode: true,
+      isBijecCacheMode: false,
       oddsPath: oddsPath,
       sportsPath: sportsPath,
     );
@@ -512,6 +533,33 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
     }
   }
 
+  Future<void> _saveBijecCacheConfig() async {
+    final currentConfig = ref.read(localDataSourceConfigProvider).value;
+    final config = (currentConfig ??
+            const LocalDataSourceConfig(
+              isLocalMode: false,
+              isBijecCacheMode: true,
+              oddsPath: '',
+              sportsPath: '',
+            ))
+        .copyWith(isLocalMode: false, isBijecCacheMode: true);
+
+    await ref.read(localDataSourceConfigProvider.notifier).updateConfig(config);
+
+    // Invalidate providers to force immediate refresh
+    ref.invalidate(rawOddsProvider);
+    ref.invalidate(availableSportsByKeyProvider);
+    // availableBookmakersByKeyProvider depends on rawOddsProvider so it will refresh
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('BijecCache mode activated successfully.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Reactive Loading (Requirement 6.4): Watch provider and update un-edited fields
@@ -524,9 +572,11 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
 
     final persistedConfig = ref.watch(localDataSourceConfigProvider).value;
     final persistedSource =
-        persistedConfig?.isLocalMode == true
-            ? _DataSource.local
-            : _DataSource.live;
+        persistedConfig?.isBijecCacheMode == true
+            ? _DataSource.bijecCache
+            : (persistedConfig?.isLocalMode == true
+                ? _DataSource.local
+                : _DataSource.live);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -645,6 +695,42 @@ class _ApiKeysSettingsTabState extends ConsumerState<_ApiKeysSettingsTab> {
           oddsPathController: _localOddsPathController,
           catalogPathController: _localSportsCatalogPathController,
           onApplyConfig: _saveLocalConfig,
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'BijecCache',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    if (persistedSource == _DataSource.bijecCache)
+                      Chip(
+                        label: const Text('Active Source'),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primaryContainer,
+                        side: BorderSide.none,
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: _saveBijecCacheConfig,
+                        child: const Text('Activate'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Use live odds from the self-hosted endpoint and load the sports catalog from the bundled file.',
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

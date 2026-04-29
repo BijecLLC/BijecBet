@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:rational/rational.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,7 +26,7 @@ class OddsApiService {
   OddsApiService({
     SharedPreferences? preferences,
     this.cacheTtl = const Duration(minutes: 5),
-    this.refreshInterval = const Duration(seconds: 1),
+    this.refreshInterval = const Duration(seconds: 15),
     this.apiKeyOverride,
     this.uid,
     http.Client? client,
@@ -47,8 +48,10 @@ class OddsApiService {
   }
 
   void _log(String message) {
-    final timestamp = DateTime.now().toIso8601String();
-    print('[$timestamp] $message');
+    if (kDebugMode) {
+      final timestamp = DateTime.now().toIso8601String();
+      debugPrint('[$timestamp] $message');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchSports({
@@ -56,8 +59,25 @@ class OddsApiService {
   }) async {
     _log('fetchSports(forceRefresh: $forceRefresh) start');
     _log('AppConfig.isLocalMode: ${AppConfig.isLocalMode}');
-    
-    
+    _log('AppConfig.isBijecCacheMode: ${AppConfig.isBijecCacheMode}');
+
+    if (AppConfig.isBijecCacheMode) {
+      _log('fetchSports reading from bundled assets/sports.json');
+      try {
+        final contents = await rootBundle.loadString('assets/sports.json');
+        final decoded = jsonDecode(contents) as List<dynamic>;
+        final remote = decoded
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+        _log('fetchSports BijecCache success: ${remote.length} records');
+        return remote;
+      } catch (e) {
+        _log('fetchSports BijecCache error: $e');
+        throw OddsApiServiceException(
+          'Failed to load bundled sports catalog: $e',
+        );
+      }
+    }
 
     if (AppConfig.isLocalMode) {
       if (kIsWeb) {
@@ -126,6 +146,31 @@ class OddsApiService {
     _log(
       'fetchOdds(sportKey: ${sportKey ?? 'all'}, forceRefresh: $forceRefresh) start',
     );
+
+    if (AppConfig.isBijecCacheMode) {
+      _log('fetchOdds fetching from VPS: ${AppConfig.oddsUrl}');
+      try {
+        final response = await _client.get(Uri.parse(AppConfig.oddsUrl));
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw OddsApiServiceException(
+            'VPS returned status ${response.statusCode}',
+          );
+        }
+        final decoded = jsonDecode(response.body) as List<dynamic>;
+        final remote = decoded
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+        final normalizedRemote = _normalizeOddsPayload(remote);
+        final filtered = _filterOddsBySport(normalizedRemote, sportKey);
+        _log(
+          'fetchOdds BijecCache success: ${filtered.length} events after filtering',
+        );
+        return filtered;
+      } catch (e) {
+        _log('fetchOdds BijecCache error: $e');
+        throw OddsApiServiceException('Failed to fetch odds from VPS: $e');
+      }
+    }
 
     if (AppConfig.isLocalMode) {
       if (kIsWeb) {

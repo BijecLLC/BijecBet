@@ -8,7 +8,7 @@
   <img src="https://bijecbet.app/brand/banner.webp" alt="BijecBet banner" width="100%" />
 </p>
 
-**BijecBet** is a high-precision, real-time analytics engine built to surface data-driven arbitrage opportunities across sportsbooks and exchanges.
+**BijecBet** is a high-performance, cross-platform arbitrage intelligence suite. It leverages a native Rust risk engine and a reactive Flutter UI to surface and validate betting opportunities with mathematical certainty.
 
 > **Stop betting. Start arbitraging.**
 
@@ -16,98 +16,92 @@
 
 ## 🚀 Key Features
 
-### 📡 Real-Time Opportunity Discovery
-*   **Live Odds Engine:** Continuous integration with **The Odds API** providing updates on Moneyline (H2H), Spreads, Totals, and Outrights.
-*   **Precision Filtering:** Pin your favorite sports and books to cut through the noise and focus on the markets that matter to you.
-*   **Freshness Indicators:** Real-time pulse icons and timers show exactly how many seconds ago a line was updated, ensuring you never chase stale odds.
+### 📡 Multi-Source Data Agnostic
+*   **Live Odds API:** Real-time integration with **The Odds API** for global market coverage.
+*   **BijecCache Mode:** Zero-config mode utilizing a self-hosted VPS caching layer for optimized throughput and cost-efficiency.
+*   **Local File Mode:** Full offline capabilities for engine testing and UI development without API consumption.
 
-### 🧮 Advanced Mathematical Validation
-*   **High-Precision Math:** Built using the `decimal` and `rational` packages to avoid the floating-point errors that can lead to losses in high-stakes betting.
-*   **Multi-Leg Support:** A flexible manual calculator that supports 2-leg and 3-leg arbitrage scenarios.
-*   **Smart Stake Allocation:** Automatically calculates the exact investment required for each leg to guarantee a profit regardless of the outcome.
+### 🛡️ Stealth Mode & Risk Intelligence
+*   **Rust Risk Engine:** High-performance scoring using a native Rust library (`bijec_bet_engine`) for near-zero latency.
+*   **Account Longevity:** Pulsing health bars and risk scores (1-10) help you mimic recreational behavior and avoid sportsbook limitation algorithms.
+*   **Discrete Staking:** Automatically rounds stakes to increments of 5 or 10 to reduce detection risk while recalculating guaranteed profit in real-time.
 
-### 👤 Seamless User Experience
-*   **Unified Dashboard:** A single pane of glass for discovering, searching, and sorting opportunities by profit margin or payout speed.
-*   **Search & Discovery:** Instant lookup for games, sportsbooks, and specific markets using a high-performance `SearchDelegate`.
-*   **Deep-Dive Analysis:** Drill down into any event to see all reported odds across every bookmaker in the market.
+### 🧮 Precision Math Core
+*   **Arbitrary Precision:** Built on `decimal` and `rational` packages to eliminate floating-point rounding errors in high-stakes calculations.
+*   **Market Agnostic:** Native support for 2-way (H2H, Spreads) and 3-way (1X2, Soccer) arbitrage detection.
+*   **ROI Focusing:** Logic centered on Return on Investment (ROI) rather than simple margin tracking.
+
+### 🎨 Quant-Grade UI/UX
+*   **Theme Registry:** Switch between **Quant** (Bloomberg-style), **Cyber** (Neon automation), and standard **Dark/Light** modes.
+*   **Reactive Dashboard:** Instantly filter by sport, bookmaker, or start time. Pinned favorites are always prioritized and synced to the cloud.
 
 ---
 
 ## 🧠 The "Math Behind the Magic"
 
-BijecBet doesn't just "guess." It uses a rigorous mathematical approach:
+BijecBet implements a rigorous N-outcome mathematical validation:
 
-1.  **Implied Probability Check:** For any set of outcomes, the system calculates $P = \sum \frac{1}{Decimal Odds_i}$.
-2.  **Detection:** If $P < 1$, an arbitrage opportunity exists.
-3.  **Optimal Execution:** The system solves for $S_i = \frac{T}{P \times Decimal Odds_i}$, where $T$ is your total investment, ensuring identical payouts across all outcomes.
-
----
-
-## 🛠️ Technical Excellence
-
-*   **Frontend:** Flutter & Material 3 for a modern, responsive UI.
-*   **State Management:** **Riverpod** for a robust, reactive, and testable data flow.
-*   **Backend:** **Firebase Auth** (Email & Google) and **Cloud Firestore** for secure profile management and real-time data syncing.
-*   **Resilience:** Advanced local caching with `SharedPreferences` to maximize performance and minimize API token consumption.
-*   **Architecture:** Clean, layered architecture separating core math logic, data services, and UI components.
+1.  **Implied Probability Check:** $P = \sum_{i=1}^{n} \frac{1}{O_i}$ (where $O_i$ is Decimal Odds).
+2.  **Detection:** If $P < 1.0$, a profitable arbitrage opportunity exists.
+3.  **Optimal Stake $S_i$:** $S_i = \frac{T}{P \times O_i}$ (where $T$ is Total Investment).
+4.  **ROI Calculation:** $ROI = (\frac{1}{P} - 1) \times 100$.
 
 ---
 
-## 🛤️ Product Roadmap
+## 🛠️ Technical Stack
 
-### 🟡 Now: The MVP Core
-*   [x] Real-time opportunity extraction from Live API.
-*   [x] Precision math engine for 2-way and 3-way arbs.
-*   [x] Manual calculator for custom scenarios.
-*   [x] Local persistence for watchlists and pinned sports.
-*   [x] Firebase Authentication (Email/Google).
-
-### 🔵 Soon: Phase 3 Integration
-*   **Cloud Syncing:** Seamlessly sync your pinned games and sports across all your devices via Firestore.
-*   **Push Notifications:** Get alerted the instant a high-margin (>3%) opportunity is detected.
-*   **Expanded Markets:** Support for 3-way markets (Soccer/Draw) and player props.
-
-### 🟢 Future: Professional Suite
-*   **Risk Management Tools:** Track your actual P&L and account for sportsbook limits and "limit" warnings.
-*   **Custom API Keys:** Allow power users to plug in their own Odds API or Betradar keys for ultra-low latency.
-*   **One-Tap Execution:** Deep-linking directly to sportsbook bet-slips (where supported).
+*   **Frontend:** Flutter (Mobile/Web/Desktop) + Material 3.
+*   **State Management:** **Riverpod 3.0** (AsyncNotifier pattern).
+*   **Native Engine:** **Rust** via `flutter_rust_bridge` (Risk scoring).
+*   **Backend:** **Firebase Auth** & **Cloud Firestore** (Real-time preference syncing).
+*   **Math:** `decimal` + `rational` (Scale 12 precision).
 
 ---
 
-## 🏁 Getting Started
+## 🛤️ Project Status
+
+- [x] **Phase 1-4:** Core Infrastructure, MVP Dashboard, Calculator, and Persistence.
+- [x] **Phase 5:** Stealth Mode, Rust Bridge, and API Management.
+- [x] **Phase 6:** Local File Parsing (Offline Mode).
+- [x] **Phase 7:** BijecCache (Self-hosted beta infrastructure).
+- [ ] **Phase 8:** Push Notification Service & Direct Bookie Deep-linking.
+
+---
+
+## 🏁 Development & Build
 
 ### Prerequisites
 - Flutter SDK (Stable)
-- A `.env` file containing your `ODDS_API_KEY`.
+- Rust Toolchain (`cargo`)
+- Firebase CLI (`flutterfire`)
 
-### Installation
-1.  Clone the repository.
-2.  Run `flutter pub get`.
-3.  Configure Firebase using `flutterfire configure`.
-4.  Execute `flutter run`.
+### Local Setup
+1.  **Dependencies:** `flutter pub get`
+2.  **Environment:** Create a `.env` in the root with `ODDS_API_KEY=your_key`.
+3.  **Rust Bridge:** 
+    ```bash
+    cargo install flutter_rust_bridge_codegen
+    flutter_rust_bridge_codegen generate
+    ```
+4.  **Firebase:** `flutterfire configure`
 
-### Rust Bridge (Phase 5.3)
-1. Install Rust (`cargo`) and keep Flutter/Dart SDK available in your shell.
-2. Install the FRB generator CLI once: `cargo install flutter_rust_bridge_codegen`.
-3. Regenerate Flutter Rust Bridge bindings whenever Rust risk API signatures change:
-   `flutter_rust_bridge_codegen generate --rust-root rust --rust-input crate::api --dart-output lib/src/rust --c-output rust/frb_generated.h`
-### Local API Key Sync Utility (Dev Only)
-When updating your OddsAPI key in local development, you can sync it into `.env` for consistent local testing:
+### Platform-Specific Release Notes
 
+#### macOS (Sandboxed Release)
+To fix Keychain errors in Release mode, ensure the app is signed with a valid Apple Development identity:
 ```bash
-dart run tool/sync_odds_api_key.dart --key=YOUR_ODDS_API_KEY
+codesign --deep --force --options runtime \
+  --sign "Apple Development: Your Name (TEAMID)" \
+  build/macos/Build/Products/Release/BijecBet.app
 ```
 
-You can also omit `--key` and provide it via shell env:
-
-```bash
-ODDS_API_KEY=YOUR_ODDS_API_KEY dart run tool/sync_odds_api_key.dart
-```
+#### Windows
+Ensure `msix_config` capabilities (`internetClient`, `runFullTrust`) are registered in `pubspec.yaml` for network access.
 
 ---
 
 ## ⚖️ Legal & Risk
-BijecBet is an analytics and tracking tool. Users are responsible for ensuring compliance with local gambling laws and sportsbook Terms of Service. Arbitrage betting involves execution risk (lines moving before both bets are placed); BijecBet provides the data, but the user manages the execution.
+BijecBet is an analytics tool. Users are responsible for compliance with local gambling laws and sportsbook TOS. Arbitrage betting involves execution risk (lines moving before both bets are placed); BijecBet provides data, but the user manages the execution.
 
 ---
 *Developed by CJ Perriello*
