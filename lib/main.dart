@@ -11,9 +11,31 @@ import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'src/rust/frb_generated.dart';
 import 'theme.dart';
+import 'package:flutter/services.dart';
+
 
 //Async function for updates
 Future<void> main() async {
+
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Workaround: github.com/flutter/flutter/issues/106452
+  // macOS Cmd+key sometimes drops the key-up event, leaving HardwareKeyboard
+  // in an inconsistent state. Catch the assertion and reset.
+  final originalOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    final msg = details.exception.toString();
+    if (msg.contains('KeyDownEvent is dispatched') &&
+        msg.contains('already pressed')) {
+      // Reset the stuck state instead of spamming the console.
+      HardwareKeyboard.instance.clearState();
+      return;
+    }
+    originalOnError?.call(details);
+  };
+
+
   WidgetsFlutterBinding.ensureInitialized();
   final rustExternalLibrary = resolveRustExternalLibrary();
   await RustLib.init(externalLibrary: rustExternalLibrary);
