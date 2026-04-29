@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "arbitrac-c586e"
-  }
+  },
+  "targets": {
+    "arbitrac-c586e": {
+      "hosting": {
+        "bijec": [
+          "bijec"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
