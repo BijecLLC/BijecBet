@@ -1,4 +1,4 @@
-import 'dart:ui' show lerpDouble;
+import 'dart:ui' show lerpDouble, ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +25,96 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool _showAllSports = false;
   bool _isPinnedSectionOpen = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBetaWarning();
+    });
+  }
+
+  Future<void> _checkBetaWarning() async {
+    final acknowledged = await ref.read(betaWarningAcknowledgedProvider.future);
+    if (!acknowledged && mounted) {
+      _showBetaWarning(context);
+    }
+  }
+
+  void _showBetaWarning(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Beta Warning',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: AlertDialog(
+            title: const Text('EXPERIMENTAL BETA NOTICE'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'BijecBet is currently in an experimental phase. This project is being released as an experiment to provide value to our community while our core development team at Bijec focuses on other strategic ventures. As such, please be aware that active development is limited, and updates or bug fixes may be infrequent.',
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'DATA SOURCE & AVAILABILITY',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'The arbitrage opportunities and odds data presented here are pulled from an open and free web-hook. This source is beyond our direct control. Should the data provider decide to privatize, restrict, or shut down this access point at any time, the BijecCache and associated settings within this application will cease to function. Furthermore, because we do not control the underlying data, there may be instances where lines, totals, or spreads are slightly delayed or inaccurate compared to the live bookmaker sites.',
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'CRITICAL BETTING WARNING',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                  const Text(
+                    'BE EXTREMELY MINDFUL WHEN PLACING BETS BASED ON THIS DATA. Sportsbooks often use different conventions for spreads and totals (e.g., one book might offer +6 while another offers -6.5). There is a significant risk where a game total lands exactly on a whole number (like 6), causing one side of your arbitrage bet to "push" (refund) while the other side loses. In such cases, you will incur a negative profit despite the theoretical arbitrage calculation. Always verify the exact lines on the bookmaker\'s platform before committing capital.',
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'LIMITATION OF LIABILITY',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'Bijec and its affiliates are not legally liable for any missed bets, financial losses, or errors resulting from the use of this free service. By proceeding, you acknowledge that this is a beta service provided by a young company and that you use it entirely at your own risk.',
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'CONTACT & FEEDBACK',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'We appreciate your support. If you encounter any critical bugs or have questions, please reach out to our team at Bijecmail@gmail.com.',
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  ref
+                      .read(betaWarningAcknowledgedProvider.notifier)
+                      .acknowledge();
+                  Navigator.of(context).pop();
+                },
+                child: const Text('I UNDERSTAND'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +155,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         centerTitle: true,
         title: const Text('Dashboard'),
         actions: [
+          TextButton(
+            onPressed: () => _showBetaWarning(context),
+            child: const Text('Read Me'),
+          ),
           IconButton(
             tooltip: 'Search games',
             onPressed: () async {

@@ -835,6 +835,12 @@ List<ArbOpportunity> _extractArbOpportunities(
       if (!ArbEngine.isArbitrageOpportunity(decimalOdds)) {
         continue;
       }
+
+      // Filter: Outcomes must be from different bookmakers
+      final bookmakerKeys = outcomeQuotes.map((q) => q.bookmakerKey).toSet();
+      if (bookmakerKeys.length < outcomeQuotes.length) {
+        continue;
+      }
       // ROI %
       final profitMarginPercent = ArbEngine.calculateRoi(arbSum);
 
@@ -1145,6 +1151,27 @@ class _ParsedLeg {
 
   final String label;
   final Decimal odds;
+}
+
+final betaWarningAcknowledgedProvider =
+    AsyncNotifierProvider<BetaWarningAcknowledgedNotifier, bool>(
+      BetaWarningAcknowledgedNotifier.new,
+    );
+
+class BetaWarningAcknowledgedNotifier extends AsyncNotifier<bool> {
+  static const String _acknowledgedKey = 'beta_warning_acknowledged_v1';
+
+  @override
+  Future<bool> build() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getBool(_acknowledgedKey) ?? false;
+  }
+
+  Future<void> acknowledge() async {
+    state = const AsyncData(true);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_acknowledgedKey, true);
+  }
 }
 
 class LocalDataSourceConfig {
