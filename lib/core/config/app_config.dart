@@ -10,7 +10,7 @@ class AppConfig {
   );
 
   static bool isLocalMode = false;
-  static bool isBijecCacheMode = false;
+  static bool isBijecCacheMode = true;
   static String localOddsPath = '';
   static String localSportsPath = '';
 

@@ -26,6 +26,35 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   );
   bool _isSubmitting = false;
 
+  Future<void> _applyBijecCacheDefault() async {
+    final currentConfig = ref.read(localDataSourceConfigProvider).value;
+    if (currentConfig != null &&
+        !currentConfig.isLocalMode &&
+        currentConfig.isBijecCacheMode) {
+      return;
+    }
+
+    final targetConfig =
+        (currentConfig ??
+                const LocalDataSourceConfig(
+                  isLocalMode: false,
+                  isBijecCacheMode: true,
+                  oddsPath: '',
+                  sportsPath: '',
+                ))
+            .copyWith(isLocalMode: false, isBijecCacheMode: true);
+
+    try {
+      await ref
+          .read(localDataSourceConfigProvider.notifier)
+          .updateConfig(targetConfig);
+    } on Exception {
+      throw const AuthServiceException(
+        'Signed in, but failed to apply BijecCache as your default source.',
+      );
+    }
+  }
+
   void _routeToMainWithExistingAccountMessage() {
     if (!mounted) {
       return;
@@ -72,6 +101,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (user == null) {
         throw const AuthServiceException('Sign up failed. Please try again.');
       }
+      await _applyBijecCacheDefault();
 
       try {
         await userProfileService.initializeForNewUser(
@@ -132,6 +162,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         _routeToMainWithExistingAccountMessage();
         return;
       }
+      await _applyBijecCacheDefault();
 
       try {
         await userProfileService.initializeForNewUser(

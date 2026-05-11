@@ -24,6 +24,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
 
+  Future<void> _applyBijecCacheDefault() async {
+    final currentConfig = ref.read(localDataSourceConfigProvider).value;
+    if (currentConfig != null &&
+        !currentConfig.isLocalMode &&
+        currentConfig.isBijecCacheMode) {
+      return;
+    }
+
+    final targetConfig =
+        (currentConfig ??
+                const LocalDataSourceConfig(
+                  isLocalMode: false,
+                  isBijecCacheMode: true,
+                  oddsPath: '',
+                  sportsPath: '',
+                ))
+            .copyWith(isLocalMode: false, isBijecCacheMode: true);
+
+    try {
+      await ref
+          .read(localDataSourceConfigProvider.notifier)
+          .updateConfig(targetConfig);
+    } on Exception {
+      throw const AuthServiceException(
+        'Signed in, but failed to apply BijecCache as your default source.',
+      );
+    }
+  }
+
   //Destroy
   @override
   void dispose() {
@@ -52,6 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (user == null) {
         throw const AuthServiceException('Login failed. Please try again.');
       }
+      await _applyBijecCacheDefault();
 
       final hasUsername = await userProfileService.hasUsername(user.uid);
       if (!mounted) return;
@@ -112,6 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           'Google Sign-in failed. Please try again.',
         );
       }
+      await _applyBijecCacheDefault();
 
       final hasUsername = await userProfileService.hasUsername(user.uid);
       if (!mounted) return;

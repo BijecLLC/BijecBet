@@ -1217,7 +1217,7 @@ class LocalDataSourceConfigNotifier extends AsyncNotifier<LocalDataSourceConfig>
   Future<LocalDataSourceConfig> build() async {
     final preferences = await SharedPreferences.getInstance();
     final isLocalMode = preferences.getBool(_isLocalModeKey) ?? false;
-    final isBijecCacheMode = preferences.getBool(_isBijecCacheModeKey) ?? false;
+    final isBijecCacheMode = preferences.getBool(_isBijecCacheModeKey) ?? true;
     final oddsPath = preferences.getString(_oddsPathKey) ?? '';
     final sportsPath = preferences.getString(_sportsPathKey) ?? '';
 
