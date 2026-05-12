@@ -794,3 +794,8 @@ shipped with the app and not user-configurable.
     - **Windows**:
         - Verify `internetClient` is present in `msix_config` (pubspec.yaml).
         - Test: Run `flutter run -d windows` and confirm odds load.
+
+
+### Phase 8 BijecPoly
+
+We now have a websocket that gives us arbitrage opportunities 
