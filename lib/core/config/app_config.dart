@@ -6,7 +6,7 @@ class AppConfig {
 
   static const String oddsUrl = String.fromEnvironment(
     'ODDS_URL',
-    defaultValue: 'http://178.128.146.218/odds.json',
+    defaultValue: 'https://pixels-tour-copyrights-troops.trycloudflare.com/odds.json',
   );
 
   static bool isLocalMode = false;
